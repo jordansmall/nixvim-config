@@ -2,6 +2,7 @@
 # Import all your configuration modules here
   imports = [ 
     ./extras/bufferline.nix
+    ./extras/treesitter.nix
   ];
 
   colorschemes.catppuccin.enable = true;
