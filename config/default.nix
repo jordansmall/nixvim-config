@@ -2,6 +2,7 @@
 # Import all your configuration modules here
   imports = [ 
     ./extras/bufferline.nix
+    ./extras/cmp.nix
     ./extras/treesitter.nix
     ./extras/lightline.nix
     ./lsp/default.nix
