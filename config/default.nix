@@ -3,6 +3,7 @@
   imports = [ 
     ./extras/bufferline.nix
     ./extras/treesitter.nix
+    ./extras/lightline.nix
   ];
 
   colorschemes.catppuccin.enable = true;
