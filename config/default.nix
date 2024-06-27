@@ -4,6 +4,7 @@
     ./extras/bufferline.nix
     ./extras/treesitter.nix
     ./extras/lightline.nix
+    ./lsp/default.nix
   ];
 
   colorschemes.catppuccin.enable = true;
