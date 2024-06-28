@@ -5,7 +5,10 @@
     ./extras/cmp.nix
     ./extras/treesitter.nix
     ./extras/lightline.nix
+    ./extras/nvim-tree.nix
     ./lsp/default.nix
+    ./extras/gitsigns.nix
+    ./options.nix
   ];
 
   colorschemes.catppuccin.enable = true;
@@ -25,5 +28,13 @@
     action = "<CMD>lua vim.lsp.buf.format()<CR>";
     options.desc = "Format the current buffer";
   }
+
+{
+  # Format file
+    key = "<leader>pe";
+    action = "<CMD>NvimTreeToggle<CR>";
+    options.desc = "Toggle Nvim Tree";
+  }
+
   ];
 }
