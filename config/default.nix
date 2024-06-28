@@ -8,6 +8,7 @@
     ./extras/nvim-tree.nix
     ./lsp/default.nix
     ./extras/gitsigns.nix
+    ./extras/autoclose.nix
     ./options.nix
   ];
 
