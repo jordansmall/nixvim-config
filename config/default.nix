@@ -9,6 +9,7 @@
     ./lsp/default.nix
     ./extras/gitsigns.nix
     ./extras/autoclose.nix
+    ./extras/which-key.nix
     ./options.nix
   ];
 
