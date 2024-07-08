@@ -32,7 +32,7 @@
 
 {
   # Format file
-    key = "<leader>pe";
+    key = "<leader>e";
     action = "<CMD>NvimTreeToggle<CR>";
     options.desc = "Toggle Nvim Tree";
   }
