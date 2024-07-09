@@ -26,5 +26,10 @@
       key = "<C-l>";
       mode = [ "n" ];
     }
+    {
+      key = "<leader>e";
+      action = "<CMD>NvimTreeToggle<CR>";
+      options.desc = "Toggle Nvim Tree";
+    }
   ];
 }
