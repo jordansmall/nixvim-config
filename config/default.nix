@@ -12,6 +12,7 @@
     ./extras/which-key.nix
 #    ./extras/copilot.nix
     ./extras/barbar.nix
+    ./extras/tmux-navigator.nix
     ./options.nix
   ];
 
