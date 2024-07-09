@@ -5,9 +5,8 @@
     ./extras/cmp.nix
     ./extras/treesitter.nix
     ./extras/lightline.nix
-    ./extras/nvim-tree.nix
+    ./extras/neo-tree.nix
     ./lsp/default.nix
-    ./extras/gitsigns.nix
     ./extras/neogit.nix
     ./extras/autoclose.nix
     ./extras/which-key.nix
@@ -33,13 +32,6 @@
     key = "<leader>fm";
     action = "<CMD>lua vim.lsp.buf.format()<CR>";
     options.desc = "Format the current buffer";
-  }
-
-{
-  # Format file
-    key = "<leader>e";
-    action = "<CMD>NvimTreeToggle<CR>";
-    options.desc = "Toggle Nvim Tree";
   }
 
   ];
