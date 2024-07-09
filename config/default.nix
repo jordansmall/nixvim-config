@@ -10,7 +10,7 @@
     ./extras/gitsigns.nix
     ./extras/autoclose.nix
     ./extras/which-key.nix
-    ./extras/copilot.nix
+#    ./extras/copilot.nix
     ./options.nix
   ];
 
