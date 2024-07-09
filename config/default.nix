@@ -11,6 +11,7 @@
     ./extras/autoclose.nix
     ./extras/which-key.nix
 #    ./extras/copilot.nix
+    ./extras/barbar.nix
     ./options.nix
   ];
 

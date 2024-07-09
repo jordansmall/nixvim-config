@@ -1,0 +1,5 @@
+{
+    plugins.barbar = {
+        enable = true;
+      };
+  }
