@@ -3,7 +3,9 @@
     treesitter = {
       enable = true;
       nixGrammars = true;
-      indent = true;
+      settings = {
+        indent.enable = true;
+      };
     };
     treesitter-context = {
       enable = true;
