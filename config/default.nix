@@ -8,6 +8,7 @@
     ./extras/nvim-tree.nix
     ./lsp/default.nix
     ./extras/gitsigns.nix
+    ./extras/neogit.nix
     ./extras/autoclose.nix
     ./extras/which-key.nix
     ./extras/copilot.nix
