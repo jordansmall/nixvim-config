@@ -19,6 +19,12 @@
     lsp-lines = {
       enable = true;
     };
+    lsp-format = {
+      enable = true;
+    };
+    lsp-status = {
+      enable = true;
+    };
   };
 
   diagnostics = {
