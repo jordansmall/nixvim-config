@@ -6,7 +6,7 @@
         bashls.enable = true;
         gopls.enable = true;
         kotlin-language-server.enable = true;
-        nil-ls.enable = true;
+        nixd.enable = true;
       };
       keymaps.lspBuf = {
         "gd" = "definition";
@@ -17,12 +17,6 @@
       };
     };
     lsp-lines = {
-      enable = true;
-    };
-    lsp-format = {
-      enable = true;
-    };
-    lsp-status = {
       enable = true;
     };
   };
