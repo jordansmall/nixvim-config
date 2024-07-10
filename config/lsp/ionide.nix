@@ -1,7 +1,5 @@
 { pkgs, ... }:
 
 {
-  extraPlugins = with pkgs.vimPlugins; [
-    Ionide-vim
-  ];
+  extraPlugins = with pkgs.vimPlugins; [ Ionide-vim ];
 }

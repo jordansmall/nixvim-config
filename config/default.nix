@@ -1,6 +1,6 @@
 {
-# Import all your configuration modules here
-  imports = [ 
+  # Import all your configuration modules here
+  imports = [
     ./extras/autoclose.nix
     ./extras/bufferline.nix
     ./extras/cmp.nix
@@ -30,18 +30,18 @@
   globals.mapleader = " ";
 
   keymaps = [
-  # File
-  {
-    mode = "n";
-    key = "<leader>f";
-    action = "+find/file";
-  }
-  {
-  # Format file
-    key = "<leader>fm";
-    action = "<CMD>lua vim.lsp.buf.format()<CR>";
-    options.desc = "Format the current buffer";
-  }
+    # File
+    {
+      mode = "n";
+      key = "<leader>f";
+      action = "+find/file";
+    }
+    {
+      # Format file
+      key = "<leader>fm";
+      action = "<CMD>lua vim.lsp.buf.format()<CR>";
+      options.desc = "Format the current buffer";
+    }
 
   ];
 }

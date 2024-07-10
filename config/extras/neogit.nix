@@ -1,6 +1,6 @@
 {
-    plugins.neogit = {
-        
-        enable = true;
-      };
-  }
+  plugins.neogit = {
+
+    enable = true;
+  };
+}

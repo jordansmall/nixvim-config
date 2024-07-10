@@ -16,14 +16,8 @@
         "K" = "hover";
       };
     };
-    lsp-lines = {
-      enable = true;
-    };
+    lsp-lines = { enable = true; };
   };
 
-  diagnostics = {
-    virtual_lines = {
-      only_current_line = true;
-    };
-  };
+  diagnostics = { virtual_lines = { only_current_line = true; }; };
 }

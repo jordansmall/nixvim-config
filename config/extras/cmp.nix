@@ -3,7 +3,7 @@
     luasnip.enable = true;
 
     cmp-buffer = { enable = true; };
-    cmp-emoji = { enable = true; }; 
+    cmp-emoji = { enable = true; };
     cmp-nvim-lsp = { enable = true; };
     cmp-path = { enable = true; };
     cmp_luasnip = { enable = true; };
@@ -16,7 +16,7 @@
           function(args)
           require('luasnip').ls_expand(args.body)
           end
-          '';
+        '';
 
         experimental = { ghost_text = true; };
 
@@ -33,7 +33,7 @@
         ];
         formatting = {
           fields = [ "abbr" "kind" "menu" ];
-          format = 
+          format =
             #lua
             ''
               function(_, item)
