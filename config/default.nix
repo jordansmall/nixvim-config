@@ -7,6 +7,8 @@
     ./extras/lightline.nix
     ./extras/neo-tree.nix
     ./lsp/default.nix
+    ./lsp/none-ls.nix
+    ./lsp/trouble.nix
     ./extras/gitsigns.nix
     ./extras/neogit.nix
     ./extras/autoclose.nix
@@ -16,6 +18,7 @@
     ./extras/tmux-navigator.nix
     ./extras/dressing.nix
     ./extras/fzf.nix
+    ./utils/telescope.nix
     ./options.nix
   ];
 
