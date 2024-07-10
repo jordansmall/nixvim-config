@@ -1,24 +1,26 @@
 {
 # Import all your configuration modules here
   imports = [ 
+    ./extras/autoclose.nix
     ./extras/bufferline.nix
     ./extras/cmp.nix
-    ./extras/treesitter.nix
+    ./extras/copilot.nix
+    ./extras/gitsigns.nix
     ./extras/lightline.nix
     ./extras/neo-tree.nix
-    ./lsp/default.nix
-    ./lsp/none-ls.nix
-    ./lsp/trouble.nix
-    ./extras/gitsigns.nix
+    ./extras/treesitter.nix
     ./extras/neogit.nix
-    ./extras/autoclose.nix
     ./extras/which-key.nix
-    ./extras/copilot.nix
-    ./extras/barbar.nix
+    #./extras/barbar.nix
     ./extras/tmux-navigator.nix
     ./extras/dressing.nix
     ./extras/fzf.nix
+    ./lsp/fidget.nix
+    ./lsp/ionide.nix
+    ./lsp/none-ls.nix
+    ./lsp/trouble.nix
     ./utils/telescope.nix
+    ./utils/blankline.nix
     ./options.nix
   ];
 
