@@ -21,6 +21,7 @@
     ./lsp/trouble.nix
     ./utils/telescope.nix
     ./utils/blankline.nix
+    ./utils/wilder.nix
     ./options.nix
   ];
 
