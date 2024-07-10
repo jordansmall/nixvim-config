@@ -14,6 +14,8 @@
     ./extras/copilot.nix
     ./extras/barbar.nix
     ./extras/tmux-navigator.nix
+    ./extras/dressing.nix
+    ./extras/fzf.nix
     ./options.nix
   ];
 
