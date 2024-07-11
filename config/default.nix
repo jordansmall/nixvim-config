@@ -4,6 +4,7 @@
     ./extras/autoclose.nix
     ./extras/bufferline.nix
     ./extras/cmp.nix
+    ./extras/conform-nvim.nix
     ./extras/copilot.nix
     ./extras/gitsigns.nix
     ./extras/lightline.nix
@@ -15,9 +16,10 @@
     ./extras/tmux-navigator.nix
     ./extras/dressing.nix
     ./extras/fzf.nix
-    ./lsp/fidget.nix
     ./lsp/ionide.nix
     ./lsp/none-ls.nix
+    ./lsp/fidget.nix
+    ./lsp/friendly-snippets.nix
     ./lsp/trouble.nix
     ./utils/telescope.nix
     ./utils/blankline.nix
