@@ -13,5 +13,8 @@
       enable = true;
       lspInterop.enable = true;
     };
+    rainbow-delimiters = {
+      enable = true;
+    };
   };
 }
