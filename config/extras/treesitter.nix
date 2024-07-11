@@ -9,5 +9,9 @@
       enable = true;
       settings = { max_lines = 2; };
     };
+    treesitter-textobjects = {
+      enable = true;
+      lspInterop.enable = true;
+    };
   };
 }
