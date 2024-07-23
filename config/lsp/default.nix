@@ -7,7 +7,7 @@
         gopls.enable = true;
         kotlin-language-server.enable = true;
         nixd.enable = true;
-        ansiblels.enable = true;
+        #ansiblels.enable = true;
       };
       keymaps = {
         diagnostics = {
