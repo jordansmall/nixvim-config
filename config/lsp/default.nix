@@ -7,10 +7,11 @@
         gopls.enable = true;
         kotlin-language-server.enable = true;
         nixd.enable = true;
+        ansiblels.enable = true;
       };
       keymaps.lspBuf = {
         "gd" = "definition";
-        "gD" = "references";
+        "gr" = "<cmd>Telescope lsp_references<CR>";
         "gt" = "type_definition";
         "gi" = "implementation";
         "K" = "hover";
@@ -20,5 +21,8 @@
       enable = true;
       currentLine = true;
     };
+    lsp-status = {
+        enable = true;
+      };
   };
 }
