@@ -12,4 +12,18 @@
     };
 
   };
+
+  keymaps = [
+    {
+      mode = "n";
+      key = "<leader>g";
+      action = "+git";
+    }
+    {
+      mode = "n";
+      key = "<leader>gg";
+      action = "<CMD>LazyGit<CR>";
+    }
+  ];
+
 }
