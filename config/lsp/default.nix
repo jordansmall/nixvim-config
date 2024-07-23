@@ -9,20 +9,24 @@
         nixd.enable = true;
         ansiblels.enable = true;
       };
-      keymaps.lspBuf = {
-        "gd" = "definition";
-        "gr" = "<cmd>Telescope lsp_references<CR>";
-        "gt" = "type_definition";
-        "gi" = "implementation";
-        "K" = "hover";
+      keymaps = {
+        diagnostics = {
+          "<leader>k" = "goto_prev";
+          "<leader>j" = "goto_next";
+        };
+        lspBuf = {
+          "gd" = "definition";
+          "gr" = "<cmd>Telescope lsp_references<CR>";
+          "gt" = "type_definition";
+          "gi" = "implementation";
+          "K" = "hover";
+        };
       };
     };
     lsp-lines = {
       enable = true;
       currentLine = true;
     };
-    lsp-status = {
-        enable = true;
-      };
+    lsp-status = { enable = true; };
   };
 }
