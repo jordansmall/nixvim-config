@@ -59,17 +59,25 @@
     {
       mode = "n";
       key = "Y";
-      action = "\"*y"; 
+      action = ''"*y'';
     }
     {
       mode = "v";
       key = "Y";
-      action = "\"*y"; 
+      action = ''"*y'';
+      options = { desc = "Copy to system clipboard"; };
     }
     {
       mode = "n";
       key = "YY";
-      action = "^\"*y$"; 
+      action = ''^"*y$'';
+      options = { desc = "Copy to system clipboard"; };
+    }
+    {
+      mode = "n";
+      key = "<leader>qq";
+      action = "<cmd>qa<cr>";
+      options = { desc = "Quit All"; };
     }
 
   ];
