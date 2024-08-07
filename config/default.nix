@@ -11,6 +11,7 @@
     ./extras/neo-tree.nix
     ./extras/treesitter.nix
     ./extras/lazygit.nix
+    ./extras/lualine.nix
     ./extras/which-key.nix
     #./extras/barbar.nix
     ./extras/tmux-navigator.nix
