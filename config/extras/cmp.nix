@@ -1,6 +1,12 @@
 {
   plugins = {
-    luasnip.enable = true;
+    luasnip = {
+      enable = true;
+      extraConfig = {
+        enable_autosnippets = true;
+        store_selection_keys = "<Tab>";
+      };
+    };
 
     cmp-buffer = { enable = true; };
     cmp-emoji = { enable = true; };
