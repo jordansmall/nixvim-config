@@ -8,7 +8,7 @@
     ./extras/copilot.nix
     ./extras/gitsigns.nix
     ./extras/lightline.nix
-    ./extras/neo-tree.nix
+#    ./extras/neo-tree.nix
     ./extras/treesitter.nix
     ./extras/lazygit.nix
     ./extras/lualine.nix
