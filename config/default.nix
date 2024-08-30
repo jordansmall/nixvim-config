@@ -25,6 +25,7 @@
     ./utils/telescope.nix
     ./utils/blankline.nix
     ./utils/wilder.nix
+    ./utils/navic.nix
     ./options.nix
   ];
 
