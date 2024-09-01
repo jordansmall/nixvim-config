@@ -10,7 +10,7 @@
         nil-ls.enable = true;
         jsonls.enable = true;
         ansiblels.enable = true;
-#        pyright.enable = true;
+        pyright.enable = true;
         helm-ls = {
           enable = true;
           extraOptions = {
