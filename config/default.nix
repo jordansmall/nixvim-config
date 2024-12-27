@@ -33,17 +33,17 @@
 
   globals.mapleader = " ";
 
-  extraPlugins = [
-    (pkgs.vimUtils.buildVimPlugin {
-      name = "gh-nvim";
-      src = pkgs.fetchFromGitHub {
-        owner = "ldelossa";
-        repo = "gh.nvim";
-        rev = "ebbaac254ef7dd6f85b439825fbce82d0dc84515";
-        hash = "sha256-5MWv/TpJSJfPY3y2dC1f2T/9sP4wn0kZ0Sed5OOFM5c=";
-      };
-    })
-  ];
+  #extraPlugins = [
+  # (pkgs.vimUtils.buildVimPlugin {
+  #   name = "gh-nvim";
+  #   src = pkgs.fetchFromGitHub {
+  #     owner = "ldelossa";
+  #     repo = "gh.nvim";
+  #     rev = "ebbaac254ef7dd6f85b439825fbce82d0dc84515";
+  #     hash = "sha256-5MWv/TpJSJfPY3y2dC1f2T/9sP4wn0kZ0Sed5OOFM5c=";
+  #   };
+  # })
+  #;
 
   keymaps = [
     # File
