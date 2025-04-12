@@ -22,6 +22,7 @@
     ./lsp/fidget.nix
     #./lsp/fidget.nix
     ./lsp/friendly-snippets.nix
+    ./lsp
     ./lsp/trouble.nix
     ./utils/telescope.nix
     ./utils/blankline.nix
