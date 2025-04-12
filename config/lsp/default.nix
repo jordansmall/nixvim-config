@@ -1,4 +1,4 @@
-{
+{ pkgs, ... }: {
   plugins = {
     lsp = {
       enable = true;
@@ -6,12 +6,12 @@
       servers = {
         bashls.enable = true;
         gopls.enable = true;
-        kotlin-language-server.enable = true;
-        nil-ls.enable = true;
+        kotlin_language_server.enable = true;
+        nil_ls.enable = true;
         jsonls.enable = true;
         ansiblels.enable = true;
         pyright.enable = true;
-        helm-ls = {
+        helm_ls = {
           enable = true;
           extraOptions = {
             settings = {
