@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{
   # Import all your configuration modules here
   imports = [
     ./extras/autoclose.nix
@@ -19,7 +19,6 @@
     ./extras/fzf.nix
     ./lsp/ionide.nix
     ./lsp/none-ls.nix
-    ./lsp/fidget.nix
     #./lsp/fidget.nix
     ./lsp/friendly-snippets.nix
     ./lsp
@@ -33,19 +32,9 @@
 
   colorschemes.catppuccin.enable = true;
 
-  globals.mapleader = " ";
+  plugins.web-devicons.enable = true;
 
-  #extraPlugins = [
-  # (pkgs.vimUtils.buildVimPlugin {
-  #   name = "gh-nvim";
-  #   src = pkgs.fetchFromGitHub {
-  #     owner = "ldelossa";
-  #     repo = "gh.nvim";
-  #     rev = "ebbaac254ef7dd6f85b439825fbce82d0dc84515";
-  #     hash = "sha256-5MWv/TpJSJfPY3y2dC1f2T/9sP4wn0kZ0Sed5OOFM5c=";
-  #   };
-  # })
-  #;
+  globals.mapleader = " ";
 
   keymaps = [
     # File
