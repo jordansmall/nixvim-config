@@ -20,6 +20,7 @@
     ./lsp/ionide.nix
     ./lsp/none-ls.nix
     ./lsp/fidget.nix
+    #./lsp/fidget.nix
     ./lsp/friendly-snippets.nix
     ./lsp/trouble.nix
     ./utils/telescope.nix
