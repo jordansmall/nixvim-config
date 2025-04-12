@@ -7,7 +7,7 @@
     ./extras/conform-nvim.nix
     ./extras/copilot.nix
     ./extras/gitsigns.nix
-    ./extras/lightline.nix
+    #    ./extras/lightline.nix
     ./extras/neo-tree.nix
     ./extras/treesitter.nix
     ./extras/lazygit.nix
