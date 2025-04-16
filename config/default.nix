@@ -27,6 +27,7 @@
     ./utils/blankline.nix
     ./utils/wilder.nix
     ./utils/navic.nix
+    ./utils/toggleterm.nix
     ./options.nix
   ];
 
