@@ -1,10 +1,10 @@
 {
   # Import all your configuration modules here
   imports = [
-    ./extras/autoclose.nix
+    ./plugins-simple.nix
     ./extras/bufferline.nix
     ./extras/cmp.nix
-    ./extras/conform-nvim.nix
+    ./formatting
     ./extras/copilot.nix
     ./extras/gitsigns.nix
     #    ./extras/lightline.nix
@@ -12,20 +12,19 @@
     ./extras/treesitter.nix
     ./extras/lazygit.nix
     ./extras/lualine.nix
-    ./extras/which-key.nix
+    # ./extras/which-key.nix  # consolidated into plugins-simple.nix
     #./extras/barbar.nix
-    ./extras/tmux-navigator.nix
-    ./extras/dressing.nix
-    ./extras/fzf.nix
-    ./lsp/ionide.nix
+    # ./extras/tmux-navigator.nix  # consolidated into plugins-simple.nix
+    # ./extras/dressing.nix  # consolidated into plugins-simple.nix
+    # ./extras/fzf.nix  # consolidated into plugins-simple.nix
+    # ./lsp/ionide.nix  # consolidated into plugins-simple.nix
     ./lsp/none-ls.nix
     #./lsp/fidget.nix
-    ./lsp/friendly-snippets.nix
+    # ./lsp/friendly-snippets.nix  # consolidated into plugins-simple.nix
     ./lsp
-    ./lsp/trouble.nix
-    ./utils/telescope.nix
+    # ./lsp/trouble.nix  # consolidated into plugins-simple.nix
     ./utils/blankline.nix
-    ./utils/wilder.nix
+    # ./utils/wilder.nix  # consolidated into plugins-simple.nix
     ./utils/navic.nix
     ./utils/toggleterm.nix
     ./options.nix
