@@ -1,4 +1,6 @@
 { pkgs, ... }: {
+  diagnostics.virtual_lines.only_current_line = true;
+
   plugins = {
     lsp = {
       enable = true;
@@ -106,10 +108,7 @@
         };
       };
     };
-    lsp-lines = {
-      enable = true;
-      currentLine = true;
-    };
+    lsp-lines.enable = true;
     lsp-status = { enable = true; };
   };
 }
