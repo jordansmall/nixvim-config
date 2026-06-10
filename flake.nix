@@ -12,8 +12,12 @@
       systems =
         [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
 
-      perSystem = { pkgs, system, ... }:
+      perSystem = { system, ... }:
         let
+          pkgs = import inputs.nixpkgs {
+            inherit system;
+            config.allowUnfreePredicate = pkg: builtins.elem (pkg.pname or "") [ "cmp-emoji" ];
+          };
           nixvimLib = nixvim.lib.${system};
           nixvim' = nixvim.legacyPackages.${system};
           nixvimModule = {
