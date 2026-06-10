@@ -17,21 +17,12 @@
         };
       };
     };
-    copilot-chat = {
-      enable = true;
-
-    };
   };
   keymaps = [
     {
       mode = "n";
       key = "<leader>c";
       action = "+copilot";
-    }
-    {
-      mode = "n";
-      key = "<leader>co";
-      action = "<CMD>CopilotChat<CR>";
     }
   ];
 }
