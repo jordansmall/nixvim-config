@@ -1,1 +1,0 @@
-{ plugins.autoclose = { enable = true; }; }
