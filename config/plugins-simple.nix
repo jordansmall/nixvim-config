@@ -14,26 +14,9 @@
   plugins.dressing = { enable = true; };
 
   # FZF integration (simple profile enable)
-  plugins."fzf-lua" = {
+  plugins.fzf = {
     enable = true;
     profile = "default";
-  };
-
-  # Telescope (was a small stub). Preserve commented keymaps from the
-  # previous file for future reference.
-  plugins.telescope = {
-    enable = true;
-#    keymaps = {
-#      "<leader>ff" = "find_files";
-#      "<leader>fg" = "live_grep";
-#      "<leader>gs" = "git_status";
-#      "<leader>cd" = "lsp_definitions";
-#      "<C-p>" = {
-#        action = "git_files";
-#        options = { desc = "Telescope Git Files"; };
-#      };
-#    };
-    extensions.fzf-native = { enable = true; };
   };
 
   # Wilder (command-line completion helper)

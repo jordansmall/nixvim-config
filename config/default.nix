@@ -4,27 +4,18 @@
     ./plugins-simple.nix
     ./extras/bufferline.nix
     ./extras/cmp.nix
-    ./formatting
+    ./formatting.nix
     ./extras/copilot.nix
     ./extras/gitsigns.nix
-    #    ./extras/lightline.nix
     ./extras/neo-tree.nix
+    ./extras/telescope.nix
     ./extras/treesitter.nix
     ./extras/lazygit.nix
     ./extras/lualine.nix
-    # ./extras/which-key.nix  # consolidated into plugins-simple.nix
-    #./extras/barbar.nix
-    # ./extras/tmux-navigator.nix  # consolidated into plugins-simple.nix
-    # ./extras/dressing.nix  # consolidated into plugins-simple.nix
-    # ./extras/fzf.nix  # consolidated into plugins-simple.nix
-    # ./lsp/ionide.nix  # consolidated into plugins-simple.nix
     ./lsp/none-ls.nix
     #./lsp/fidget.nix
-    # ./lsp/friendly-snippets.nix  # consolidated into plugins-simple.nix
     ./lsp
-    # ./lsp/trouble.nix  # consolidated into plugins-simple.nix
     ./utils/blankline.nix
-    # ./utils/wilder.nix  # consolidated into plugins-simple.nix
     ./utils/navic.nix
     ./utils/toggleterm.nix
     ./options.nix

@@ -21,20 +21,15 @@
   # -------------------------------
   # none-ls formatters (by filetype)
   # -------------------------------
-  # These are formatters provided by "none-ls"; they complement LSP formatting and are
-  # available for filetypes where no LSP formatter exists or when conform falls back.
-  plugins.none-ls = {
-    enable = true;
-    sources = {
-      formatting = {
-        gofmt.enable = true;
-        goimports.enable = true;
-        ktlint.enable = true;
-        nixfmt.enable = true;
-        shfmt.enable = true;
-        markdownlint.enable = true;
-        shellharden.enable = true;
-      };
-    };
+  # These formatters are provided by none-ls (declared active in lsp/none-ls.nix)
+  # and complement LSP formatting for filetypes without a dedicated LSP formatter.
+  plugins.none-ls.sources.formatting = {
+    gofmt.enable = true;
+    goimports.enable = true;
+    ktlint.enable = true;
+    nixfmt.enable = true;
+    shfmt.enable = true;
+    markdownlint.enable = true;
+    shellharden.enable = true;
   };
 }
