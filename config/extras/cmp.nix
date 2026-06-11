@@ -4,13 +4,14 @@
       enable = true;
       settings = {
         enable_autosnippets = true;
-        store_selection_keys = "<Tab>";
+        cut_selection_keys = "<Tab>";
       };
     };
 
     cmp-buffer = { enable = true; };
     cmp-emoji = { enable = true; };
     cmp-nvim-lsp = { enable = true; };
+    cmp-nvim-lua = { enable = true; };
     cmp-path = { enable = true; };
     cmp_luasnip = { enable = true; };
 
@@ -20,7 +21,7 @@
       settings = {
         snippet.expand = ''
           function(args)
-          require('luasnip').ls_expand(args.body)
+          require('luasnip').lsp_expand(args.body)
           end
         '';
 
@@ -47,42 +48,42 @@
                   Text = "󰉿",
                   Method = "󰆧",
                   Function = "󰆧",
-                  Constructor = "",
+                  Constructor = "",
                   Field = "󰜢",
                   Variable = "󰀫",
                   Class = "󰠱",
-                  Interface = "",
-                  Module = "",
+                  Interface = "",
+                  Module = "",
                   Property = "󰜢",
                   Unit = "󰑭",
                   Value = "󰎠",
-                  Enum = "",
+                  Enum = "",
                   Keyword = "󰌋",
-                  Snippet = "",
+                  Snippet = "",
                   Color = "󰏘",
                   File = "󰈚",
                   Reference = "󰈇",
                   Folder = "󰉋",
-                  EnumMember = "",
+                  EnumMember = "",
                   Constant = "󰏿",
                   Struct = "󰙅",
-                  Event = "",
+                  Event = "",
                   Operator = "󰆕",
                   TypeParameter = "󰊄",
-                  Table = "",
+                  Table = "",
                   Object = "󰅩",
-                  Tag = "",
+                  Tag = "",
                   Array = "[]",
-                  Boolean = "",
-                  Number = "",
+                  Boolean = "",
+                  Number = "",
                   Null = "󰟢",
                   String = "󰉿",
-                  Calendar = "",
+                  Calendar = "",
                   Watch = "󰥔",
-                  Package = "",
-                  Copilot = "",
-                  Codeium = "",
-                  TabNine = "",
+                  Package = "",
+                  Copilot = "",
+                  Codeium = "",
+                  TabNine = "",
                 }
 
                 local icon = icons[item.kind] or ""
@@ -96,11 +97,11 @@
             winhighlight =
               "FloatBorder:CmpBorder,Normal:CmpPmenu,CursorLine:CmpSel,Search:PmenuSel";
             scrollbar = false;
-            sidePadding = 0;
+            side_padding = 0;
             border = [ "╭" "─" "╮" "│" "╯" "─" "╰" "│" ];
           };
 
-          settings.documentation = {
+          documentation = {
             border = [ "╭" "─" "╮" "│" "╯" "─" "╰" "│" ];
             winhighlight =
               "FloatBorder:CmpBorder,Normal:CmpPmenu,CursorLine:CmpSel,Search:PmenuSel";
