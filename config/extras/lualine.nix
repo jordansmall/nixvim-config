@@ -4,63 +4,58 @@
     settings = {
       options = {
         theme = "catppuccin";
-        disabledFiletypes = { statusline = [ "startup" "alpha" ]; };
-        extensions = [ "fzf" "neo-tree" ];
+        disabled_filetypes = { statusline = [ "startup" "alpha" ]; };
         globalstatus = true;
+      };
 
-        sections = {
-          lualine_a = [{
-            name = "mode";
-            #icon = " ";
-          }];
-          lualine_b = [
-            { name = "branch"; }
-            {
-              name = "diff";
-              extraConfig = {
-                symbols = {
-                  #added = " ";
-                  #modified = " ";
-                  #removed = " ";
-                };
-              };
-            }
-          ];
-          lualine_c = [
-            {
-              name = "diagnostics";
-              extraConfig = {
-                sources = [ "nvim_lsp" ];
-                symbols = {
-                  #error = " ";
-                  #warn = " ";
-                  #info = " ";
-                  #hint = "󰝶 ";
-                };
-              };
-            }
-            {
-              name = "filetype";
-              extraConfig = {
-                icon_only = true;
-                separator = "";
-                padding = {
-                  left = 1;
-                  right = 0;
-                };
-              };
-            }
-            {
-              name = "filename";
-              extraConfig = { path = 1; };
-            }
-          ];
-          lualine_x = [
-            { name = "navic"; }
-          ];
-          lualine_y = [{ name = "progress"; }];
-          lualine_z = [{ name = "location"; }];
-        };
+      extensions = [ "fzf" "neo-tree" ];
+
+      sections = {
+        lualine_a = [{
+          __unkeyed-1 = "mode";
+          #icon = " ";
+        }];
+        lualine_b = [
+          { __unkeyed-1 = "branch"; }
+          {
+            __unkeyed-1 = "diff";
+            symbols = {
+              #added = " ";
+              #modified = " ";
+              #removed = " ";
+            };
+          }
+        ];
+        lualine_c = [
+          {
+            __unkeyed-1 = "diagnostics";
+            sources = [ "nvim_lsp" ];
+            symbols = {
+              #error = " ";
+              #warn = " ";
+              #info = " ";
+              #hint = "󰝶 ";
+            };
+          }
+          {
+            __unkeyed-1 = "filetype";
+            icon_only = true;
+            separator = "";
+            padding = {
+              left = 1;
+              right = 0;
+            };
+          }
+          {
+            __unkeyed-1 = "filename";
+            path = 1;
+          }
+        ];
+        lualine_x = [
+          { __unkeyed-1 = "navic"; }
+        ];
+        lualine_y = [{ __unkeyed-1 = "progress"; }];
+        lualine_z = [{ __unkeyed-1 = "location"; }];
       };
     };
   };
