@@ -12,17 +12,4 @@ lib.mkIf config.features.lazygit {
       use_neovim_remote = 1;
     };
   };
-
-  keymaps = [
-    {
-      mode = "n";
-      key = "<leader>g";
-      action = "+git";
-    }
-    {
-      mode = "n";
-      key = "<leader>gg";
-      action = "<CMD>LazyGit<CR>";
-    }
-  ];
 }

@@ -44,12 +44,4 @@ lib.mkIf config.features.copilot {
       '';
     }
   ];
-
-  keymaps = [
-    {
-      mode = "n";
-      key = "<leader>c";
-      action = "+copilot";
-    }
-  ];
 }
