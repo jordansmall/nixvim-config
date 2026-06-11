@@ -11,7 +11,6 @@
         kotlin_language_server.enable = true;
         nil_ls.enable = true;
         jsonls.enable = true;
-        ansiblels.enable = true;
         pyright.enable = true;
         helm_ls = {
           enable = true;
