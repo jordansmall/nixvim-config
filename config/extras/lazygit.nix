@@ -1,4 +1,5 @@
-{
+{ lib, config, ... }:
+lib.mkIf config.features.lazygit {
   plugins.lazygit = {
     enable = true;
     settings = {
@@ -10,7 +11,6 @@
       use_custom_config_file_path = 0;
       use_neovim_remote = 1;
     };
-
   };
 
   keymaps = [
@@ -25,5 +25,4 @@
       action = "<CMD>LazyGit<CR>";
     }
   ];
-
 }

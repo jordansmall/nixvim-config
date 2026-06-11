@@ -1,5 +1,5 @@
-{ lib, ... }:
-{
+{ lib, config, ... }:
+lib.mkIf config.features.copilot {
   plugins = {
     copilot-lua = {
       enable = true;

@@ -1,6 +1,7 @@
 {
   # Import all your configuration modules here
   imports = [
+    ./features.nix
     ./plugins-simple.nix
     ./extras/bufferline.nix
     ./extras/cmp.nix

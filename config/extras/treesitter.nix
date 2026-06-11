@@ -1,4 +1,5 @@
-{
+{ lib, config, ... }:
+lib.mkIf config.features.treesitter {
   plugins = {
     treesitter = {
       enable = true;

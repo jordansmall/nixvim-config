@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, config, ... }:
 
 {
   # Consolidated simple plugin enables
@@ -40,5 +40,7 @@
   # can see they were intentionally not enabled here):
   # ./extras/lightline.nix       # previously commented-out in default.nix
   # ./extras/barbar.nix         # previously commented-out in default.nix
-  # ./lsp/fidget.nix           # previously commented-out in default.nix
+  # Fidget (LSP progress notifications) — disabled by default.
+  # Set features.fidget = true in config/features.nix to enable.
+  plugins.fidget = lib.mkIf config.features.fidget { enable = true; };
 }
