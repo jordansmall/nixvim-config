@@ -35,7 +35,6 @@
           }
           { name = "nvim_lua"; }
           { name = "path"; }
-          { name = "copilot"; }
         ];
         formatting = {
           fields = [ "abbr" "kind" "menu" ];
