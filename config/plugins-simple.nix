@@ -20,7 +20,7 @@
   };
 
   # Wilder (command-line completion helper)
-  plugins.wilder = { enable = true; modes = [ ":" "/" "?" ]; };
+  plugins.wilder = { enable = true; settings.modes = [ ":" "/" "?" ]; };
 
   # Snippets, LSP helpers, and small extras
   plugins."friendly-snippets" = { enable = true; };
