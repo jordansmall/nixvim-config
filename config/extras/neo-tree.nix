@@ -1,20 +1,22 @@
 {
   plugins.neo-tree = {
     enable = true;
-    sources = ["filesystem" "buffers" "git_status" "document_symbols"];
+    settings = {
+      sources = ["filesystem" "buffers" "git_status" "document_symbols"];
 
-    defaultComponentConfigs = {
-      modified = {
-        highlight = "NeoTreeModified";
-        symbol = "[+] ";
+      default_component_configs = {
+        modified = {
+          highlight = "NeoTreeModified";
+          symbol = "[+] ";
+        };
       };
       indent = {
-        withExpanders = true;
-        expanderCollapsed = "";
-        expanderExpanded = " ";
-        expanderHighlight = "NeoTreeExpander";
+        with_expanders = true;
+        expander_collapsed = "";
+        expander_expanded = " ";
+        expander_highlight = "NeoTreeExpander";
       };
-      gitStatus = {
+      git_status = {
         symbols = {
           added = " ";
           conflict = "󰩌 ";
@@ -29,5 +31,4 @@
       };
     };
   };
-
 }
