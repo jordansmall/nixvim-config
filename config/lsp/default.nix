@@ -1,5 +1,5 @@
 { pkgs, ... }: {
-  diagnostics.virtual_lines.only_current_line = true;
+  diagnostic.virtual_lines.only_current_line = true;
 
   plugins = {
     lsp = {
