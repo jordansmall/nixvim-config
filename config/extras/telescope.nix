@@ -10,6 +10,7 @@
         layout_config = { horizontal = { prompt_position = "top"; }; };
         sorting_strategy = "ascending";
       };
+      pickers.colorscheme.enable_preview = true;
     };
     keymaps = {
       "<leader><space>" = {
@@ -114,13 +115,4 @@
       };
     };
   };
-  extraConfigLua = ''
-    require("telescope").setup{
-      pickers = {
-        colorscheme = {
-          enable_preview = true
-        }
-      }
-    }
-  '';
 }
