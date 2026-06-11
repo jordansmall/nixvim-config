@@ -14,7 +14,7 @@
   plugins.dressing = { enable = true; };
 
   # FZF integration (simple profile enable)
-  plugins.fzf = {
+  plugins.fzf-lua = {
     enable = true;
     profile = "default";
   };
