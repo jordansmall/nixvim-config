@@ -4,10 +4,8 @@ lib.mkIf config.features.treesitter {
     treesitter = {
       enable = true;
       nixGrammars = true;
-      settings = {
-        indent.enable = true;
-        #ensure_installed = [ "all" ] ;
-      };
+      indent.enable = true;
+      #settings.ensure_installed = [ "all" ] ;
     };
     treesitter-context = {
       enable = true;
@@ -15,7 +13,7 @@ lib.mkIf config.features.treesitter {
     };
     treesitter-textobjects = {
       enable = true;
-      lspInterop.enable = true;
+      settings.lsp_interop.enable = true;
     };
     rainbow-delimiters = { enable = true; };
   };
