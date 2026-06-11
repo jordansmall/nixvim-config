@@ -18,6 +18,8 @@ lib.mkIf config.features.copilot {
         };
       };
     };
+
+    copilot-cmp.enable = true;
   };
 
   # Append the copilot source to nvim-cmp's source list.
@@ -28,19 +30,20 @@ lib.mkIf config.features.copilot {
 
   # Append the copilot statusline widget to lualine's lualine_x section.
   # Uses lib.mkAfter so lualine.nix owns the base sections and copilot adds itself.
-  plugins.lualine.settings.options.sections.lualine_x = lib.mkAfter [
+  plugins.lualine.settings.sections.lualine_x = lib.mkAfter [
     {
-      name.__raw = ''
+      __unkeyed-1.__raw = ''
         function()
           local icon = " "
           local status = require("copilot.api").status.data
           return icon .. (status.message or " ")
-        end,
-
-        cond = function()
-         local ok, clients = pcall(vim.lsp.get_clients, { name = "copilot", bufnr = 0 })
-         return ok and #clients > 0
-        end,
+        end
+      '';
+      cond.__raw = ''
+        function()
+          local ok, clients = pcall(vim.lsp.get_clients, { name = "copilot", bufnr = 0 })
+          return ok and #clients > 0
+        end
       '';
     }
   ];
