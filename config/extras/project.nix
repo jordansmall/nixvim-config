@@ -7,6 +7,11 @@
       patterns = [ ".git" ".hg" "Makefile" "package.json" "flake.nix" ];
       # Suppress the chdir notification; workspace switcher manages cwd explicitly.
       silent_chdir = true;
+      # Skip project.nvim root detection for internal Telescope buffers
+      # Telescope uses `prompt` for the input buffer and `nofile` for results.
+      disable_on = {
+        bt = [ "prompt" "nofile" "help" "quickfix" ];
+      };
     };
   };
 }
