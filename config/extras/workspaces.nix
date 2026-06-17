@@ -33,14 +33,15 @@
         history.get_recent_projects = function(...)
           -- Temporarily replace write_history with a deferred version so any
           -- stale-entry cleanup triggered inside get_recent_projects does not
-          -- block synchronously.
+          -- block synchronously.  Restore in both success and error paths.
           local orig_write = history.write_history
           history.write_history = function(...)
             local args = { ... }
             vim.defer_fn(function() orig_write(unpack(args)) end, 500)
           end
-          local result = orig(...)
-          history.write_history = orig_write   -- restore immediately after
+          local ok, result = pcall(orig, ...)
+          history.write_history = orig_write   -- restore regardless of outcome
+          if not ok then error(result, 2) end
           return result
         end
       end,
@@ -174,13 +175,13 @@
       -- 7. Show neo-tree in the sidebar, then open find_files if no real
       --    project buffers exist.  vim.schedule lets the window layout settle
       --    before neo-tree inserts its split.
-        _project_finder_cache = nil
-        vim.schedule(function()
-          require("neo-tree.command").execute({ action = "show", dir = root, toggle = false })
-          if not has_real_bufs then
-            require('telescope.builtin').find_files()
-          end
-        end)
+      _project_finder_cache = nil
+      vim.schedule(function()
+        require("neo-tree.command").execute({ action = "show", dir = root, toggle = false })
+        if not has_real_bufs then
+          require('telescope.builtin').find_files()
+        end
+      end)
     end
 
     -- Custom project picker: reuses project.nvim's finder so the project list
