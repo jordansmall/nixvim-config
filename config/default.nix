@@ -11,6 +11,7 @@
     ./extras/gitsigns.nix
     ./extras/neo-tree.nix
     ./extras/project.nix
+    ./extras/workspaces.nix
     ./extras/session.nix
     ./extras/telescope.nix
     ./extras/treesitter.nix
