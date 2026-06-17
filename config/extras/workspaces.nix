@@ -17,6 +17,35 @@
 
     local _project_finder_cache = nil
 
+    -- Defer any write_history calls that fire during get_recent_projects so
+    -- they never block the picker open path. Runs once after plugins load.
+    -- Use VimEnter here because this config does not use lazy.nvim's LazyDone
+    -- event.
+    vim.api.nvim_create_autocmd("VimEnter", {
+      once = true,
+      callback = function()
+        local ok, history = pcall(function()
+          return require('project').util.history
+        end)
+        if not ok or not history then return end
+
+        local orig = history.get_recent_projects
+        history.get_recent_projects = function(...)
+          -- Temporarily replace write_history with a deferred version so any
+          -- stale-entry cleanup triggered inside get_recent_projects does not
+          -- block synchronously.
+          local orig_write = history.write_history
+          history.write_history = function(...)
+            local args = { ... }
+            vim.defer_fn(function() orig_write(unpack(args)) end, 500)
+          end
+          local result = orig(...)
+          history.write_history = orig_write   -- restore immediately after
+          return result
+        end
+      end,
+    })
+
     -- Source a persistence session file safely and return whether it contained
     -- real project files.
     --
