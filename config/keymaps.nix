@@ -42,9 +42,11 @@
       { mode = "n"; key = "<leader>fe"; action = "<cmd>Telescope file_browser<cr>";                             options = { desc = "File browser"; }; }
       { mode = "n"; key = "<leader>fE"; action = "<cmd>Telescope file_browser path=%:p:h select_buffer=true<cr>"; options = { desc = "File browser"; }; }
 
-      # Project — project.nvim + workspaces
-      { mode = "n"; key = "<leader>fp"; action = "<cmd>Telescope projects<cr>";     options = { desc = "Switch project"; }; }
-      { mode = "n"; key = "<leader>p";  action = "<cmd>Telescope projects<cr>";     options = { desc = "Switch workspace"; }; }
+      # Project — project.nvim + workspaces (custom picker, not :Telescope projects)
+      { mode = "n"; key = "<leader>fp"; action = "<cmd>lua ProjectPicker()<cr>";  options = { desc = "Switch project"; }; }
+      { mode = "n"; key = "<leader>p";  action = "<cmd>lua ProjectPicker()<cr>";  options = { desc = "Switch workspace"; }; }
+      { mode = "n"; key = "<leader>pa"; action = "<cmd>lua AddProject()<cr>";     options = { desc = "Add project"; }; }
+      { mode = "n"; key = "<leader>pr"; action = "<cmd>lua RemoveProject()<cr>";  options = { desc = "Remove project"; }; }
     ]
 
     # ── Feature-gated keymaps ──────────────────────────────────────────────
