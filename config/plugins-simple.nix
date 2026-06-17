@@ -7,6 +7,10 @@
   # enables and trivial options are set here. More complex plugin files
   # remain as standalone modules and are imported from config/default.nix.
 
+  # direnv integration — loads .envrc into Neovim's process env so LSP servers
+  # and formatters inherit the correct environment (mirrors envrc.el behaviour).
+  plugins.direnv = { enable = true; settings.silent_load = 1; };
+
   # UI / UX helpers
   plugins.autoclose = { enable = true; };
   plugins."which-key" = { enable = true; };
