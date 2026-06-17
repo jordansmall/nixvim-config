@@ -3,12 +3,6 @@
   keymaps =
     # ── Global keymaps (always active) ────────────────────────────────────
     [
-      # which-key group labels
-      { mode = "n"; key = "<leader>f";  action = "+find/file"; }
-      { mode = "n"; key = "<leader>c";  action = "+code"; }
-      { mode = "n"; key = "<leader>g";  action = "+git"; }
-      { mode = "n"; key = "<leader>p";  action = "+project"; }
-
       # Clipboard
       { mode = "n"; key = "Y";   action = ''"*y''; }
       { mode = "v"; key = "Y";   action = ''"*y''; options = { desc = "Copy to system clipboard"; }; }
@@ -48,16 +42,12 @@
       { mode = "n"; key = "<leader>fe"; action = "<cmd>Telescope file_browser<cr>";                             options = { desc = "File browser"; }; }
       { mode = "n"; key = "<leader>fE"; action = "<cmd>Telescope file_browser path=%:p:h select_buffer=true<cr>"; options = { desc = "File browser"; }; }
 
-      # Project — project.nvim + auto-session
-      { mode = "n"; key = "<leader>fp"; action = "<cmd>Telescope projects<cr>";       options = { desc = "Switch project"; }; }
-      { mode = "n"; key = "<leader>fs"; action = "<cmd>Telescope session-lens<cr>";   options = { desc = "Browse sessions"; }; }
+      # Project — project.nvim + workspaces
+      { mode = "n"; key = "<leader>fp"; action = "<cmd>Telescope projects<cr>";     options = { desc = "Switch project"; }; }
+      { mode = "n"; key = "<leader>p";  action = "<cmd>Telescope projects<cr>";     options = { desc = "Switch workspace"; }; }
     ]
 
     # ── Feature-gated keymaps ──────────────────────────────────────────────
-    ++ lib.optionals config.features.copilot [
-      { mode = "n"; key = "<leader>a"; action = "+ai"; }
-    ]
-
     ++ lib.optionals config.features.lazygit [
       { mode = "n"; key = "<leader>gg"; action = "<CMD>LazyGit<CR>"; }
     ];
