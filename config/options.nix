@@ -1,6 +1,7 @@
 { lib, pkgs, ... }: {
   config.opts = {
     updatetime = 100;
+    timeoutlen = 300;
     fileencoding = "utf-8";
 
     number = true;
