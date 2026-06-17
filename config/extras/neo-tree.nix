@@ -51,6 +51,12 @@
     desc = "Re-root neo-tree to match the new project root";
     callback.__raw = ''
       function()
+        -- Suppress during project switches: tcd fires DirChanged before the
+        -- session is loaded.  If neo-tree opens here it either goes full-screen
+        -- (only the scratch buffer exists yet) or gets wiped by `silent only`
+        -- in the session file.  switch_project opens neo-tree explicitly after
+        -- the session is restored instead.
+        if _G._sp_switching then return end
         require("neo-tree.command").execute({ dir = vim.fn.getcwd() })
       end
     '';
