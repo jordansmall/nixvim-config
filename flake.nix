@@ -16,7 +16,7 @@
         let
           pkgs = import inputs.nixpkgs {
             inherit system;
-            config.allowUnfreePredicate = pkg: builtins.elem (pkg.pname or "") [ "cmp-emoji" ];
+            config.allowUnfreePredicate = pkg: builtins.elem (pkg.pname or "") [ "cmp-emoji" "scope.nvim" ];
           };
           nixvimLib = nixvim.lib.${system};
           nixvim' = nixvim.legacyPackages.${system};
