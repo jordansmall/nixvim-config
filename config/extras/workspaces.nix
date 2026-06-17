@@ -190,7 +190,7 @@
         default    = default_dir,
         completion = 'dir',
       })
-      if raw == '' then return end
+      if raw == ''' then return end
 
       local path = vim.fn.resolve(vim.fn.expand(raw))
       if vim.fn.isdirectory(path) == 0 then
