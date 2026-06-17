@@ -10,6 +10,8 @@
     ./extras/copilot.nix
     ./extras/gitsigns.nix
     ./extras/neo-tree.nix
+    ./extras/project.nix
+    ./extras/session.nix
     ./extras/telescope.nix
     ./extras/treesitter.nix
     ./extras/lazygit.nix
