@@ -15,6 +15,8 @@
       return #t > 0 and table.concat(t, ", ") or "(none)"
     end
 
+    local _project_finder_cache = nil
+
     -- Source a persistence session file safely and return whether it contained
     -- real project files.
     --
@@ -143,12 +145,13 @@
       -- 7. Show neo-tree in the sidebar, then open find_files if no real
       --    project buffers exist.  vim.schedule lets the window layout settle
       --    before neo-tree inserts its split.
-      vim.schedule(function()
-        require("neo-tree.command").execute({ action = "show", dir = root, toggle = false })
-        if not has_real_bufs then
-          require('telescope.builtin').find_files()
-        end
-      end)
+        _project_finder_cache = nil
+        vim.schedule(function()
+          require("neo-tree.command").execute({ action = "show", dir = root, toggle = false })
+          if not has_real_bufs then
+            require('telescope.builtin').find_files()
+          end
+        end)
     end
 
     -- Custom project picker: reuses project.nvim's finder so the project list
@@ -165,7 +168,12 @@
       pickers.new({}, {
         prompt_title  = 'Switch Project',
         results_title = 'Projects',
-        finder        = util.create_finder(),
+        finder        = (function()
+                          if not _project_finder_cache then
+                            _project_finder_cache = util.create_finder()
+                          end
+                          return _project_finder_cache
+                        end)(),
         sorter        = conf.generic_sorter({}),
         previewer     = false,
         attach_mappings = function(prompt_bufnr)
@@ -218,6 +226,7 @@
         history.write_history()
       end
 
+      _project_finder_cache = nil
       switch_project(path)
     end
 
@@ -234,7 +243,12 @@
       pickers.new({}, {
         prompt_title  = 'Remove Project',
         results_title = 'Projects',
-        finder        = util.create_finder(),
+        finder        = (function()
+                          if not _project_finder_cache then
+                            _project_finder_cache = util.create_finder()
+                          end
+                          return _project_finder_cache
+                        end)(),
         sorter        = conf.generic_sorter({}),
         previewer     = false,
         attach_mappings = function(prompt_bufnr)
@@ -246,7 +260,8 @@
               local path = putil.rstrip('/', vim.fn.fnamemodify(
                 vim.fn.expand(entry.value), ':p'))
               -- prompt=true shows a confirmation dialog before deleting
-              putil.history.delete_project(path, true)
+               putil.history.delete_project(path, true)
+               _project_finder_cache = nil
             end
           end)
           return true
