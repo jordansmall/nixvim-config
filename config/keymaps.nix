@@ -7,6 +7,7 @@
       { mode = "n"; key = "<leader>f";  action = "+find/file"; }
       { mode = "n"; key = "<leader>c";  action = "+code"; }
       { mode = "n"; key = "<leader>g";  action = "+git"; }
+      { mode = "n"; key = "<leader>p";  action = "+project"; }
 
       # Clipboard
       { mode = "n"; key = "Y";   action = ''"*y''; }
@@ -46,6 +47,10 @@
       { mode = "n"; key = "<leader>sd"; action = "<cmd>Telescope diagnostics bufnr=0<cr>";                      options = { desc = "Document diagnostics"; }; }
       { mode = "n"; key = "<leader>fe"; action = "<cmd>Telescope file_browser<cr>";                             options = { desc = "File browser"; }; }
       { mode = "n"; key = "<leader>fE"; action = "<cmd>Telescope file_browser path=%:p:h select_buffer=true<cr>"; options = { desc = "File browser"; }; }
+
+      # Project — project.nvim + auto-session
+      { mode = "n"; key = "<leader>fp"; action = "<cmd>Telescope projects<cr>";       options = { desc = "Switch project"; }; }
+      { mode = "n"; key = "<leader>fs"; action = "<cmd>Telescope session-lens<cr>";   options = { desc = "Browse sessions"; }; }
     ]
 
     # ── Feature-gated keymaps ──────────────────────────────────────────────
