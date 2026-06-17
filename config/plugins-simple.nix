@@ -13,7 +13,18 @@
 
   # UI / UX helpers
   plugins.autoclose = { enable = true; };
-  plugins."which-key" = { enable = true; };
+  plugins."which-key" = {
+    enable = true;
+    settings.spec =
+      [
+        { __unkeyed-1 = "<leader>f"; group = "find/file"; }
+        { __unkeyed-1 = "<leader>c"; group = "code"; }
+        { __unkeyed-1 = "<leader>g"; group = "git"; }
+      ]
+      ++ lib.optionals config.features.copilot [
+        { __unkeyed-1 = "<leader>a"; group = "ai"; }
+      ];
+  };
   plugins."tmux-navigator" = { enable = true; };
   plugins.dressing = { enable = true; };
 
@@ -29,6 +40,7 @@
   # Snippets, LSP helpers, and small extras
   plugins."friendly-snippets" = { enable = true; };
   plugins.trouble = { enable = true; };
+  plugins.scope = { enable = true; };
 
   # Ionide (F#) helper: was a tiny file that exposed extraPlugins using pkgs
   # keep it here as an extraPlugins entry so the vimPlugins package is still
