@@ -3,7 +3,7 @@
     enable = true;
     settings = {
       options = {
-        theme = "catppuccin";
+        theme = "auto";
         disabled_filetypes = { statusline = [ "startup" "alpha" ]; };
         globalstatus = true;
       };
