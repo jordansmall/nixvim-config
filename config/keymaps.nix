@@ -20,8 +20,9 @@
       { action = "<C-w>k"; key = "<C-k>"; mode = [ "n" ]; }
       { action = "<C-w>l"; key = "<C-l>"; mode = [ "n" ]; }
 
-      # Terminal
-      { mode = [ "n" "t" ]; key = "<leader>t"; action = "<CMD>ToggleTerm<CR>"; options.desc = "Toggle terminal"; }
+      # Terminal (per-project)
+      { mode = [ "n" "t" ]; key = "<leader>t";  action = "<CMD>lua ToggleProjectTerm()<CR>"; options.desc = "Toggle project terminal"; }
+      { mode = [ "n" "t" ]; key = "<C-Return>"; action = "<CMD>lua ToggleProjectTerm()<CR>"; options.desc = "Toggle project terminal"; }
 
       # File tree
       { key = "<leader>e"; action = "<CMD>Neotree toggle<CR>"; options.desc = "Toggle Nvim Tree"; }
