@@ -15,6 +15,29 @@
       return #t > 0 and table.concat(t, ", ") or "(none)"
     end
 
+    -- Returns true if there is at least one real, listed buffer that is neither
+    -- an empty scratch buffer nor a neo-tree panel.  Used after a project
+    -- switch to decide whether to auto-open telescope find_files.
+    local function has_real_listed_bufs()
+      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted then
+          local ft   = vim.bo[buf].filetype
+          local name = vim.api.nvim_buf_get_name(buf)
+          -- neo-tree panels do not count as real buffers.
+          local is_neotree = ft == "neo-tree"
+          -- Unnamed buffers with no content are scratch buffers.
+          local is_empty_scratch = name == "" and (function()
+            local lines = vim.api.nvim_buf_get_lines(buf, 0, 1, false)
+            return #lines == 0 or lines[1] == ""
+          end)()
+          if not is_neotree and not is_empty_scratch then
+            return true
+          end
+        end
+      end
+      return false
+    end
+
     local _project_finder_cache = nil
 
     -- Defer any write_history calls that fire during get_recent_projects so
@@ -178,8 +201,15 @@
       _project_finder_cache = nil
       vim.schedule(function()
         require("neo-tree.command").execute({ action = "show", dir = root, toggle = false })
-        if not has_real_bufs then
-          require('telescope.builtin').find_files()
+        -- Defer telescope until neo-tree has finished inserting its split.
+        -- Running find_files in the same tick causes neo-tree's async window
+        -- operations to steal focus and close the picker immediately.
+        -- Use a live buffer scan: the cleanup loop in load_session_for may have
+        -- unlisted buffers outside the new root, making has_real_bufs stale.
+        if not has_real_listed_bufs() then
+          vim.defer_fn(function()
+            require('telescope.builtin').find_files()
+          end, 50)
         end
       end)
     end
