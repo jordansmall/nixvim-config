@@ -169,6 +169,7 @@
           vim.api.nvim_set_current_tabpage(tabpage)
           vim.schedule(function()
             require("neo-tree.command").execute({ action = "show", dir = root, toggle = false })
+            vim.defer_fn(function() vim.cmd("LspRestart") end, 300)
           end)
           return
         end
@@ -211,6 +212,7 @@
             require('telescope.builtin').find_files()
           end, 50)
         end
+        vim.defer_fn(function() vim.cmd("LspRestart") end, 300)
       end)
     end
 
