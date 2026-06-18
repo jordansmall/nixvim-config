@@ -169,7 +169,23 @@
           vim.api.nvim_set_current_tabpage(tabpage)
           vim.schedule(function()
             require("neo-tree.command").execute({ action = "show", dir = root, toggle = false })
-            vim.defer_fn(function() vim.cmd("LspRestart") end, 300)
+            vim.defer_fn(function()
+              -- Stop all LSP clients; re-trigger FileType so servers restart for
+              -- the new project root.  LspRestart is an nvim-lspconfig v0 command
+              -- absent in the v1 / native vim.lsp config path used by nixvim.
+              vim.lsp.stop_client(vim.lsp.get_clients())
+              vim.schedule(function()
+                for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+                  if vim.api.nvim_buf_is_valid(buf)
+                    and vim.bo[buf].buflisted
+                    and vim.bo[buf].filetype ~= "" then
+                    vim.api.nvim_buf_call(buf, function()
+                      vim.cmd("do FileType")
+                    end)
+                  end
+                end
+              end)
+            end, 300)
           end)
           return
         end
@@ -212,7 +228,23 @@
             require('telescope.builtin').find_files()
           end, 50)
         end
-        vim.defer_fn(function() vim.cmd("LspRestart") end, 300)
+        vim.defer_fn(function()
+          -- Stop all LSP clients; re-trigger FileType so servers restart for
+          -- the new project root.  LspRestart is an nvim-lspconfig v0 command
+          -- absent in the v1 / native vim.lsp config path used by nixvim.
+          vim.lsp.stop_client(vim.lsp.get_clients())
+          vim.schedule(function()
+            for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+              if vim.api.nvim_buf_is_valid(buf)
+                and vim.bo[buf].buflisted
+                and vim.bo[buf].filetype ~= "" then
+                vim.api.nvim_buf_call(buf, function()
+                  vim.cmd("do FileType")
+                end)
+              end
+            end
+          end)
+        end, 300)
       end)
     end
 
