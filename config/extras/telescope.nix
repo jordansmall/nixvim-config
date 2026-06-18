@@ -25,6 +25,10 @@
         action = "command_history";
         options = { desc = "Command History"; };
       };
+      "<leader>." = {
+        action = "buffers";
+        options = { desc = "Switch buffer"; };
+      };
       "<leader>b" = {
         action = "buffers";
         options = { desc = "+buffer"; };
