@@ -20,6 +20,9 @@
       { action = "<C-w>k"; key = "<C-k>"; mode = [ "n" ]; }
       { action = "<C-w>l"; key = "<C-l>"; mode = [ "n" ]; }
 
+      # Terminal
+      { mode = [ "n" "t" ]; key = "<leader>t"; action = "<CMD>ToggleTerm<CR>"; options.desc = "Toggle terminal"; }
+
       # File tree
       { key = "<leader>e"; action = "<CMD>Neotree toggle<CR>"; options.desc = "Toggle Nvim Tree"; }
 
