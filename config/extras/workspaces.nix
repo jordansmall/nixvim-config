@@ -1,35 +1,19 @@
 {
   extraConfigLua = ''
-    local _log = io.open("/tmp/sp-debug.log", "a")
-    local function log(msg)
-      if _log then _log:write(os.date("%H:%M:%S") .. " " .. msg .. "\n"); _log:flush() end
-    end
-
-    local function listed_bufs()
-      local t = {}
-      for _, b in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.bo[b].buflisted then
-          t[#t+1] = string.format("buf%d(%s)", b, vim.fn.fnamemodify(vim.api.nvim_buf_get_name(b), ":t"))
-        end
-      end
-      return #t > 0 and table.concat(t, ", ") or "(none)"
-    end
-
     -- Returns true if there is at least one real, listed buffer that is neither
-    -- an empty scratch buffer nor a neo-tree panel.  Used after a project
+    -- an empty scratch buffer nor a neo-tree panel. Used after a project
     -- switch to decide whether to auto-open telescope find_files.
     local function has_real_listed_bufs()
       for _, buf in ipairs(vim.api.nvim_list_bufs()) do
         if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted then
-          local ft   = vim.bo[buf].filetype
+          local ft = vim.bo[buf].filetype
           local name = vim.api.nvim_buf_get_name(buf)
-          -- neo-tree panels do not count as real buffers.
           local is_neotree = ft == "neo-tree"
-          -- Unnamed buffers with no content are scratch buffers.
-          local is_empty_scratch = name == "" and (function()
+          local is_empty_scratch = false
+          if name == "" then
             local lines = vim.api.nvim_buf_get_lines(buf, 0, 1, false)
-            return #lines == 0 or lines[1] == ""
-          end)()
+            is_empty_scratch = (#lines == 0 or lines[1] == "")
+          end
           if not is_neotree and not is_empty_scratch then
             return true
           end
@@ -38,52 +22,46 @@
       return false
     end
 
-    local _project_finder_cache = nil
+    local function reinit_lsp_for_root(root)
+      local resolved_root = vim.fn.resolve(vim.fn.expand(root))
+      local clients_to_stop = {}
 
-    -- Defer any write_history calls that fire during get_recent_projects so
-    -- they never block the picker open path. Runs once after plugins load.
-    -- Use VimEnter here because this config does not use lazy.nvim's LazyDone
-    -- event.
-    vim.api.nvim_create_autocmd("VimEnter", {
-      once = true,
-      callback = function()
-        local ok, history = pcall(function()
-          return require('project').util.history
-        end)
-        if not ok or not history then return end
-
-        local orig = history.get_recent_projects
-        history.get_recent_projects = function(...)
-          -- Temporarily replace write_history with a deferred version so any
-          -- stale-entry cleanup triggered inside get_recent_projects does not
-          -- block synchronously.  Restore in both success and error paths.
-          local orig_write = history.write_history
-          history.write_history = function(...)
-            local args = { ... }
-            vim.defer_fn(function() orig_write(unpack(args)) end, 500)
+      for _, client in ipairs(vim.lsp.get_clients()) do
+        local client_root = client.config and client.config.root_dir
+        if client_root then
+          local resolved_client_root = vim.fn.resolve(vim.fn.expand(client_root))
+          if resolved_client_root == resolved_root
+            or vim.startswith(resolved_client_root, resolved_root .. "/") then
+            clients_to_stop[#clients_to_stop + 1] = client
           end
-          local ok, result = pcall(orig, ...)
-          history.write_history = orig_write   -- restore regardless of outcome
-          if not ok then error(result, 2) end
-          return result
         end
-      end,
-    })
+      end
+
+      if #clients_to_stop > 0 then
+        vim.lsp.stop_client(clients_to_stop)
+      end
+
+      vim.schedule(function()
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+          if vim.api.nvim_buf_is_valid(buf)
+            and vim.bo[buf].buflisted
+            and vim.bo[buf].filetype ~= "" then
+            local name = vim.api.nvim_buf_get_name(buf)
+            local in_root = name == ""
+              or vim.startswith(vim.fn.resolve(vim.fn.fnamemodify(name, ":p")), resolved_root .. "/")
+            if in_root then
+              vim.api.nvim_buf_call(buf, function()
+                vim.cmd("do FileType")
+              end)
+            end
+          end
+        end
+      end)
+    end
 
     -- Source a persistence session file safely and return whether it contained
     -- real project files.
-    --
-    -- Safety filters applied to every line before sourcing:
-    --   tabonly / silent tabonly  — would close all other project tabs
-    --   tabnext / tabprev / tabdo / etc.
-    --       — fire TabLeave + TabEnter, corrupting scope.nvim's buffer lists
-    --   neo-tree references — we open neo-tree explicitly after restore
-    --
-    -- Returns true if the session had at least one real (non-neo-tree) badd
-    -- line.  This is determined by scanning the file BEFORE sourcing it
-    -- because post-load buffer state is unreliable: scope.nvim may relist
-    -- the wrong tab's buffers mid-source.
-    function load_session_for(root)
+    local function load_session_for(root)
       local p = require('persistence')
       local session_file = p.current()
       if vim.fn.filereadable(session_file) == 0 then
@@ -107,9 +85,10 @@
       -- Filter unsafe tab commands and neo-tree references.
       local filtered = {}
       for _, line in ipairs(lines) do
-        local skip = line:match("tabonly")
-                  or line:match("^tab%a")
-                  or line:match("[Nn]eo%-[Tt]ree")
+        local skip = line:match("^%s*silent!?%s+tabonly%s*$")
+          or line:match("^%s*tabonly%s*$")
+          or line:match("^%s*tab%a")
+          or line:match("[Nn]eo%-[Tt]ree")
         if not skip then
           table.insert(filtered, line)
         end
@@ -121,13 +100,12 @@
       vim.fn.delete(tmp)
 
       -- Synchronous cleanup: unlist neo-tree buffers and any buffers outside
-      -- root that snuck in from an old session.  Must be synchronous so
-      -- persistence.save() on the next switch sees a clean list.
+      -- root that snuck in from an old session.
       local real_root = vim.fn.resolve(vim.fn.expand(root))
       for _, buf in ipairs(vim.api.nvim_list_bufs()) do
         if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted then
           local name = vim.api.nvim_buf_get_name(buf)
-          local ft   = vim.bo[buf].filetype
+          local ft = vim.bo[buf].filetype
           if ft == "neo-tree" then
             vim.bo[buf].buflisted = false
           elseif name ~= "" then
@@ -142,16 +120,16 @@
       return has_real_files
     end
 
-    function switch_project(root)
-      log("switch_project called — root=" .. root)
-
-      -- Early exit: already on this project in the current tab.
-      if vim.fn.resolve(vim.fn.getcwd()) == vim.fn.resolve(root) then
-        log("  already on this project, ignoring")
+    local function switch_project(root)
+      if vim.fn.isdirectory(root) == 0 then
+        vim.notify('switch_project: invalid directory — ' .. tostring(root), vim.log.levels.ERROR)
         return
       end
 
-      log("  listed before close+save: " .. listed_bufs())
+      -- Early exit: already on this project in the current tab.
+      if vim.fn.resolve(vim.fn.getcwd()) == vim.fn.resolve(root) then
+        return
+      end
 
       -- 1. Close neo-tree BEFORE saving so it is absent from the session file.
       pcall(function()
@@ -165,26 +143,11 @@
       for _, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
         local tabnr = vim.api.nvim_tabpage_get_number(tabpage)
         if vim.fn.getcwd(-1, tabnr) == root then
-          log("  reusing existing tab " .. tabnr)
           vim.api.nvim_set_current_tabpage(tabpage)
           vim.schedule(function()
             require("neo-tree.command").execute({ action = "show", dir = root, toggle = false })
             vim.defer_fn(function()
-              -- Stop all LSP clients; re-trigger FileType so servers restart for
-              -- the new project root.  LspRestart is an nvim-lspconfig v0 command
-              -- absent in the v1 / native vim.lsp config path used by nixvim.
-              vim.lsp.stop_client(vim.lsp.get_clients())
-              vim.schedule(function()
-                for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-                  if vim.api.nvim_buf_is_valid(buf)
-                    and vim.bo[buf].buflisted
-                    and vim.bo[buf].filetype ~= "" then
-                    vim.api.nvim_buf_call(buf, function()
-                      vim.cmd("do FileType")
-                    end)
-                  end
-                end
-              end)
+              reinit_lsp_for_root(root)
             end, 300)
           end)
           return
@@ -192,90 +155,82 @@
       end
 
       -- 4. Open a new tab and set the tab-local cwd.
-      --    _G._sp_switching suppresses the DirChanged neo-tree handler while
+      --    vim.g.sp_switching suppresses the DirChanged neo-tree handler while
       --    we load the session; we open neo-tree explicitly afterwards.
-      log("  opening new tab")
       vim.cmd("tabnew")
       local scratch = vim.api.nvim_get_current_buf()
-      _G._sp_switching = true
-      vim.cmd("tcd " .. vim.fn.fnameescape(root))
+      vim.g.sp_switching = true
+      local ok, result = pcall(function()
+        vim.cmd("tcd " .. vim.fn.fnameescape(root))
+        return load_session_for(root)
+      end)
+      vim.g.sp_switching = false
 
-      -- 5. Restore the session. Returns true if real project files were present.
-      local has_real_bufs = load_session_for(root)
-      _G._sp_switching = false
-      log("  has_real_bufs=" .. tostring(has_real_bufs) .. "  listed after restore: " .. listed_bufs())
+      -- 5. Restore the session. Always clear the switching guard.
+      local has_real_bufs = ok and result
+      if not ok then
+        vim.notify(
+          "switch_project: session restore failed — " .. tostring(result),
+          vim.log.levels.WARN
+        )
+      end
 
       -- 6. Delete the unnamed scratch buffer created by tabnew.
       if vim.api.nvim_buf_is_valid(scratch)
         and vim.api.nvim_buf_get_name(scratch) == "" then
         pcall(vim.api.nvim_buf_delete, scratch, { force = false })
       end
-      log("  listed after scratch delete: " .. listed_bufs())
 
       -- 7. Show neo-tree in the sidebar, then open find_files if no real
-      --    project buffers exist.  vim.schedule lets the window layout settle
-      --    before neo-tree inserts its split.
-      _project_finder_cache = nil
+      --    project buffers exist.
       vim.schedule(function()
         require("neo-tree.command").execute({ action = "show", dir = root, toggle = false })
-        -- Defer telescope until neo-tree has finished inserting its split.
-        -- Running find_files in the same tick causes neo-tree's async window
-        -- operations to steal focus and close the picker immediately.
-        -- Use a live buffer scan: the cleanup loop in load_session_for may have
-        -- unlisted buffers outside the new root, making has_real_bufs stale.
-        if not has_real_listed_bufs() then
+        if not has_real_bufs and not has_real_listed_bufs() then
           vim.defer_fn(function()
             require('telescope.builtin').find_files()
           end, 50)
         end
         vim.defer_fn(function()
-          -- Stop all LSP clients; re-trigger FileType so servers restart for
-          -- the new project root.  LspRestart is an nvim-lspconfig v0 command
-          -- absent in the v1 / native vim.lsp config path used by nixvim.
-          vim.lsp.stop_client(vim.lsp.get_clients())
-          vim.schedule(function()
-            for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-              if vim.api.nvim_buf_is_valid(buf)
-                and vim.bo[buf].buflisted
-                and vim.bo[buf].filetype ~= "" then
-                vim.api.nvim_buf_call(buf, function()
-                  vim.cmd("do FileType")
-                end)
-              end
-            end
-          end)
+          reinit_lsp_for_root(root)
         end, 300)
       end)
     end
 
-    -- Custom project picker: reuses project.nvim's finder so the project list
-    -- stays in sync, but replaces select_default with switch_project.
-    -- :Telescope projects is not used because ahmedkhalf/project.nvim hard-codes
-    -- its select_default to find_project_files with no public override hook.
-    function ProjectPicker()
+    local function project_picker()
       local actions = require('telescope.actions')
-      local state   = require('telescope.actions.state')
+      local state = require('telescope.actions.state')
+      local finders = require('telescope.finders')
       local pickers = require('telescope.pickers')
-      local conf    = require('telescope.config').values
-      local util    = require('telescope._extensions.projects.util')
+      local conf = require('telescope.config').values
+      local project_nvim = require('project')
+      local ok_projects, recent_projects = pcall(project_nvim.get_recent_projects, true)
+      if not ok_projects or type(recent_projects) ~= 'table' then
+        recent_projects = {}
+      end
+      recent_projects = vim.fn.reverse(vim.deepcopy(recent_projects))
 
       pickers.new({}, {
-        prompt_title  = 'Switch Project',
+        prompt_title = 'Switch Project',
         results_title = 'Projects',
-        finder        = (function()
-                          if not _project_finder_cache then
-                            _project_finder_cache = util.create_finder()
-                          end
-                          return _project_finder_cache
-                        end)(),
-        sorter        = conf.generic_sorter({}),
-        previewer     = false,
+        finder = finders.new_table({
+          results = recent_projects,
+          entry_maker = function(path)
+            local expanded = vim.fn.expand(path)
+            return {
+              value = expanded,
+              display = vim.fn.fnamemodify(expanded, ':~'),
+              ordinal = expanded,
+            }
+          end,
+        }),
+        sorter = conf.generic_sorter({}),
+        previewer = false,
         attach_mappings = function(prompt_bufnr)
           actions.select_default:replace(function()
             local entry = state.get_selected_entry(prompt_bufnr)
             actions.close(prompt_bufnr)
             if entry then
-              switch_project(vim.fn.expand(entry.value))
+              switch_project(entry.value)
             end
           end)
           return true
@@ -283,84 +238,52 @@
       }):find()
     end
 
-    -- Register a directory as a project.nvim project and immediately switch to it.
-    -- Prompts for the directory (defaulting to cwd) via vim.fn.input.
-    function AddProject(preset_dir)
+    local function add_project(preset_dir)
       local default_dir = preset_dir or vim.fn.getcwd()
       local raw = vim.fn.input({
-        prompt     = 'Add project: ',
-        default    = default_dir,
+        prompt = 'Add project: ',
+        default = default_dir,
         completion = 'dir',
       })
-      if raw == ''' then return end
-
-      local path = vim.fn.resolve(vim.fn.expand(raw))
-      if vim.fn.isdirectory(path) == 0 then
-        vim.notify('AddProject: not a directory — ' .. path, vim.log.levels.ERROR)
+      if not raw or raw == "" then
         return
       end
 
-      local putil   = require('project').util
-      path          = putil.strip_slash(path)
-      local history = putil.history
-      history.read_history()
-
-      -- Insert into session_projects if not already present; write_history
-      -- deduplicates across session + recent so this is safe even if the
-      -- project already lives in recent_projects.
-      local legacy = history.legacy or false
-      if not vim.tbl_contains(history.session_projects or {}, function(v)
-        return (legacy and v or v.path) == path
-      end, { predicate = true }) then
-        local name = vim.fs.joinpath(
-          vim.fn.fnamemodify(path, ':h:t'),
-          vim.fn.fnamemodify(path, ':t'))
-        table.insert(history.session_projects,
-          legacy and path or { path = path, name = name })
-        history.write_history()
+      local path = vim.fn.resolve(vim.fn.expand(raw))
+      if vim.fn.isdirectory(path) == 0 then
+        vim.notify('ProjectAdd: not a directory — ' .. path, vim.log.levels.ERROR)
+        return
       end
 
-      _project_finder_cache = nil
       switch_project(path)
     end
 
-    -- Open a Telescope picker listing all registered projects; select one to
-    -- deregister (remove) it from project.nvim's history.
-    function RemoveProject()
-      local actions = require('telescope.actions')
-      local state   = require('telescope.actions.state')
-      local pickers = require('telescope.pickers')
-      local conf    = require('telescope.config').values
-      local util    = require('telescope._extensions.projects.util')
-      local putil   = require('project').util
-
-      pickers.new({}, {
-        prompt_title  = 'Remove Project',
-        results_title = 'Projects',
-        finder        = (function()
-                          if not _project_finder_cache then
-                            _project_finder_cache = util.create_finder()
-                          end
-                          return _project_finder_cache
-                        end)(),
-        sorter        = conf.generic_sorter({}),
-        previewer     = false,
-        attach_mappings = function(prompt_bufnr)
-          actions.select_default:replace(function()
-            local entry = state.get_selected_entry(prompt_bufnr)
-            actions.close(prompt_bufnr)
-            if entry then
-              -- entry.value is tilde-form; expand to absolute then strip slash
-              local path = putil.rstrip('/', vim.fn.fnamemodify(
-                vim.fn.expand(entry.value), ':p'))
-              -- prompt=true shows a confirmation dialog before deleting
-               putil.history.delete_project(path, true)
-               _project_finder_cache = nil
-            end
-          end)
-          return true
-        end,
-      }):find()
+    local function remove_project()
+      local ok, telescope = pcall(require, 'telescope')
+      if not ok then
+        vim.notify('ProjectRemove: telescope is unavailable', vim.log.levels.ERROR)
+        return
+      end
+      local ok_ext = pcall(function()
+        telescope.extensions.projects.projects({})
+      end)
+      if not ok_ext then
+        vim.notify('ProjectRemove: telescope projects extension is unavailable', vim.log.levels.ERROR)
+        return
+      end
+      vim.notify('Project picker opened. Press d to remove selected project.', vim.log.levels.INFO)
     end
+
+    vim.api.nvim_create_user_command('ProjectPicker', function()
+      project_picker()
+    end, { desc = 'Switch project' })
+
+    vim.api.nvim_create_user_command('ProjectAdd', function(opts)
+      add_project(opts.args ~= "" and opts.args or nil)
+    end, { nargs = '?', complete = 'dir', desc = 'Add project and switch' })
+
+    vim.api.nvim_create_user_command('ProjectRemove', function()
+      remove_project()
+    end, { desc = 'Open picker and remove project with d' })
   '';
 }
