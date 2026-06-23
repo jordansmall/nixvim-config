@@ -3,6 +3,7 @@
     enable = true;
     settings = {
       sources = ["filesystem" "buffers" "git_status" "document_symbols"];
+      log_to_file = false;
 
       default_component_configs = {
         modified = {
@@ -30,6 +31,62 @@
         };
       };
       filesystem = {
+        group_empty_dirs = true;
+        window.mappings."<cr>".__raw = ''
+          function(state)
+            local node = state.tree:get_node()
+            if node.type ~= "directory" or node:is_expanded() then
+              require("neo-tree.sources.filesystem.commands").open(state)
+              return
+            end
+            local fs       = require("neo-tree.sources.filesystem")
+            local renderer = require("neo-tree.ui.renderer")
+
+            -- group_empty_dirs replaces the original node with a new grouped node
+            -- whose id is the deepest path in the single-child chain.  Resolve the
+            -- current logical node by falling back to the replacement sibling.
+            local function resolve(n)
+              if state.tree:get_node(n:get_id()) then return n end
+              for _, sibling in ipairs(state.tree:get_nodes(n:get_parent_id()) or {}) do
+                if vim.startswith(sibling:get_id(), n:get_id()) then
+                  return sibling
+                end
+              end
+            end
+
+            local function expand_node(n, cb)
+              if n.loaded == false then
+                fs.toggle_directory(state, n, nil, false, false, cb)
+              else
+                if not n:is_expanded() then
+                  fs.toggle_directory(state, n)
+                end
+                cb()
+              end
+            end
+
+            local function after_expand(n)
+              local current = resolve(n)
+              if not current then return end
+
+              -- The resolved node may itself be a collapsed grouped node created by
+              -- group_empty_dirs — expand it before inspecting children.
+              if not current:is_expanded() then
+                expand_node(current, function() after_expand(current) end)
+                return
+              end
+
+              local children = state.tree:get_nodes(current:get_id())
+              if children and #children == 1 and children[1].type == "directory" then
+                expand_node(children[1], function() after_expand(children[1]) end)
+              else
+                renderer.focus_node(state, current:get_id())
+              end
+            end
+
+            expand_node(node, function() after_expand(node) end)
+          end
+        '';
         # Scroll the tree to the current file and highlight it.
         follow_current_file = {
           enabled = true;
@@ -56,7 +113,7 @@
         -- (only the scratch buffer exists yet) or gets wiped by `silent only`
         -- in the session file.  switch_project opens neo-tree explicitly after
         -- the session is restored instead.
-        if _G._sp_switching then return end
+        if vim.g.sp_switching then return end
         require("neo-tree.command").execute({ dir = vim.fn.getcwd() })
       end
     '';
