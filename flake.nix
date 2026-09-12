@@ -14,9 +14,37 @@
 
       perSystem = { system, ... }:
         let
+          # Upstream re-cut the v3.0.4 tag (bundled copilot/js dropped now that
+          # copilot-language-server is packaged separately), so the hash in
+          # generated.nix no longer matches. Drop once nixpkgs regenerates it.
+          #
+          # extend, not `//`: copilot-cmp and copilot-lualine resolve copilot-lua
+          # through the vimPlugins fixpoint, so a top-level merge would leave
+          # them building the stale source.
+          copilotLuaHashFix = _: prev: {
+            vimPlugins = prev.vimPlugins.extend (
+              _: vprev: {
+                copilot-lua = vprev.copilot-lua.overrideAttrs (_: {
+                  src = prev.fetchFromGitHub {
+                    owner = "zbirenbaum";
+                    repo = "copilot.lua";
+                    tag = "v3.0.4";
+                    hash = "sha256-kDQOm7/N6T7wOw1JlkcxNMnQrDE4oTRyGCZkvT8HZQw=";
+                  };
+                });
+              }
+            );
+          };
           pkgs = import inputs.nixpkgs {
             inherit system;
-            config.allowUnfreePredicate = pkg: builtins.elem (pkg.pname or "") [ "cmp-emoji" "scope.nvim" ];
+            overlays = [ copilotLuaHashFix ];
+            config.allowUnfreePredicate = pkg:
+              builtins.elem (inputs.nixpkgs.lib.getName pkg) [
+                "cmp-emoji"
+                "scope.nvim"
+                # Pulled in by copilot.lua; GitHub Copilot License.
+                "copilot-language-server"
+              ];
           };
           nixvimLib = nixvim.lib.${system};
           nixvim' = nixvim.legacyPackages.${system};
