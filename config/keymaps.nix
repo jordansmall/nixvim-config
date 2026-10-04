@@ -57,4 +57,15 @@
     ++ lib.optionals config.features.lazygit [
       { mode = "n"; key = "<leader>gg"; action = "<CMD>LazyGit<CR>"; }
     ];
+
+  # which-key group names (docs/adr/0002-keymaps-nix-owns-global-key-layout.md)
+  plugins.which-key.settings.spec =
+    [
+      { __unkeyed-1 = "<leader>f"; group = "find/file"; }
+      { __unkeyed-1 = "<leader>c"; group = "code"; }
+      { __unkeyed-1 = "<leader>g"; group = "git"; }
+    ]
+    ++ lib.optionals config.features.copilot [
+      { __unkeyed-1 = "<leader>a"; group = "ai"; }
+    ];
 }
