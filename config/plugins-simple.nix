@@ -13,18 +13,7 @@
 
   # UI / UX helpers
   plugins.autoclose = { enable = true; };
-  plugins."which-key" = {
-    enable = true;
-    settings.spec =
-      [
-        { __unkeyed-1 = "<leader>f"; group = "find/file"; }
-        { __unkeyed-1 = "<leader>c"; group = "code"; }
-        { __unkeyed-1 = "<leader>g"; group = "git"; }
-      ]
-      ++ lib.optionals config.features.copilot [
-        { __unkeyed-1 = "<leader>a"; group = "ai"; }
-      ];
-  };
+  plugins.which-key = { enable = true; };
   plugins."tmux-navigator" = { enable = true; };
   plugins.dressing = { enable = true; };
 
