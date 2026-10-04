@@ -9,6 +9,16 @@ When making any changes to this nixvim configuration, consult the nixvim source 
 Browse the `plugins/` directory and module source to verify that plugin names and option paths
 exist before using them.
 
+## Workflow
+
+- **Worktrees:** do all work in a git worktree on its own branch, never in the main checkout.
+- **Pull requests:** always open a PR for every change. Never push to `main`, even when you have
+  permission to bypass branch protection.
+- **Issues:** create issues with the `/to-tickets` skill, never directly with `gh issue create`.
+  Label every issue `ready-for-agent`.
+- **Commits:** write every commit with the `/commit` skill, never with a hand-written
+  `git commit`.
+
 ## Commit conventions
 
 Group changes by file — one commit per file touched. When a file addresses multiple issues,
