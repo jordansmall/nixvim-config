@@ -1,8 +1,9 @@
 -- Headless Neovim spec for the `multiverse` flake check: setup() registers
 -- the Multiverse commands, the <leader>p keymaps target them, the terminal
--- keymaps (<leader>t, <C-Return>) toggle MultiverseTerminal, zellij (which
--- MultiverseTerminal shells out to) is on PATH, and the project switcher,
--- project.nvim, persistence.nvim, scope.nvim and toggleterm are gone.
+-- keymaps (<leader>t in normal mode only, <C-Return> in normal and terminal
+-- mode) toggle MultiverseTerminal, zellij (which MultiverseTerminal shells
+-- out to) is on PATH, and the project switcher, project.nvim,
+-- persistence.nvim, scope.nvim and toggleterm are gone.
 
 local failures = {}
 
@@ -56,11 +57,14 @@ local function check_keymaps()
     end
   end
 
-  for _, lhs in ipairs({ "<leader>t", "<C-Return>" }) do
-    for mode, expected in pairs({
+  for lhs, modes in pairs({
+    ["<leader>t"] = { n = "<cmd>multiverseterminal<cr>" },
+    ["<C-Return>"] = {
       n = "<cmd>multiverseterminal<cr>",
       t = "<c-\\><c-n><cmd>multiverseterminal<cr>",
-    }) do
+    },
+  }) do
+    for mode, expected in pairs(modes) do
       local map = mapping(lhs, mode)
       if vim.tbl_isempty(map) then
         fail(string.format("keymap %s is not mapped in mode %s", lhs, mode))
@@ -68,6 +72,12 @@ local function check_keymaps()
         fail(string.format("keymap %s (mode %s) rhs is %q, expected %q (case-insensitive)", lhs, mode, map.rhs or "", expected))
       end
     end
+  end
+
+  -- A Space-prefixed terminal-mode map makes Neovim hold every typed space for
+  -- timeoutlen and swallow fast-typed " t" (git tag, npm test).
+  if not vim.tbl_isempty(mapping("<leader>t", "t")) then
+    fail("keymap <leader>t must not be mapped in terminal mode")
   end
 
   for _, lhs in ipairs({ "<leader>fp", "<leader>p" }) do
