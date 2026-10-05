@@ -99,8 +99,10 @@
             # the environment changed, and they reattach to listed buffers.
             direnv-lsp = mkHeadlessCheck "direnv-lsp" ./checks/direnv-lsp.lua;
 
-            # Headless spec: a `direnv export vim` job superseded by a newer one
-            # is dropped, so it neither applies its output nor fires DirenvLoaded.
+            # Headless spec: a superseded `direnv export vim` runs to completion
+            # but its stale-cwd output is neither applied nor fires DirenvLoaded,
+            # and exports still complete under sustained triggers, slower than
+            # the interval or faster (via the g:direnv_max_wait cap).
             direnv-export = mkHeadlessCheck "direnv-export" ./checks/direnv-export.lua;
 
             # Headless spec: multiverse.nvim's commands and <leader>p keymaps
