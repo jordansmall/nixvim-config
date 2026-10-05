@@ -101,6 +101,11 @@
             # Headless spec: multiverse.nvim's commands and <leader>p keymaps
             # exist, and the project switcher it replaced is gone.
             multiverse = mkHeadlessCheck "multiverse" ./checks/multiverse.lua;
+
+            # Headless spec: checktime is scoped per event (FocusGained: all
+            # buffers, BufEnter: entered buffer, CursorHold*: visible buffers),
+            # skipped in command-line mode, and reloads notify.
+            autoread = mkHeadlessCheck "autoread" ./checks/autoread.lua;
           };
 
           packages = {
