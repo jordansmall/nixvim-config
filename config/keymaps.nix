@@ -46,11 +46,12 @@
       { mode = "n"; key = "<leader>fe"; action = "<cmd>Telescope file_browser<cr>";                             options = { desc = "File browser"; }; }
       { mode = "n"; key = "<leader>fE"; action = "<cmd>Telescope file_browser path=%:p:h select_buffer=true<cr>"; options = { desc = "File browser"; }; }
 
-      # Project — project.nvim + workspaces (custom picker, not :Telescope projects)
-      { mode = "n"; key = "<leader>fp"; action = "<cmd>ProjectPicker<cr>"; options = { desc = "Switch project"; }; }
-      { mode = "n"; key = "<leader>p";  action = "<cmd>ProjectPicker<cr>"; options = { desc = "Switch workspace"; }; }
-      { mode = "n"; key = "<leader>pa"; action = "<cmd>ProjectAdd<cr>";    options = { desc = "Add project"; }; }
-      { mode = "n"; key = "<leader>pr"; action = "<cmd>ProjectRemove<cr>"; options = { desc = "Remove project"; }; }
+      # Multiverse — user commands only; <leader>pr leaves the prompt open for a name
+      { mode = "n"; key = "<leader>pp";     action = "<cmd>MultiverseList<cr>";      options = { desc = "List universes"; }; }
+      { mode = "n"; key = "<leader>pa";     action = "<cmd>MultiverseAdd<cr>";       options = { desc = "Add universe"; }; }
+      { mode = "n"; key = "<leader>pr";     action = ":MultiverseRemove ";           options = { desc = "Remove universe"; }; }
+      { mode = "n"; key = "<leader>p<tab>"; action = "<cmd>MultiverseAlternate<cr>"; options = { desc = "Alternate universe"; }; }
+      { mode = "n"; key = "<leader>pl";     action = "<cmd>MultiverseLog<cr>";       options = { desc = "Universe log"; }; }
     ]
 
     # ── Feature-gated keymaps ──────────────────────────────────────────────
@@ -64,6 +65,7 @@
       { __unkeyed-1 = "<leader>f"; group = "find/file"; }
       { __unkeyed-1 = "<leader>c"; group = "code"; }
       { __unkeyed-1 = "<leader>g"; group = "git"; }
+      { __unkeyed-1 = "<leader>p"; group = "universe"; }
     ]
     ++ lib.optionals config.features.copilot [
       { __unkeyed-1 = "<leader>a"; group = "ai"; }
