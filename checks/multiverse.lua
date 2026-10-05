@@ -1,6 +1,8 @@
 -- Headless Neovim spec for the `multiverse` flake check: setup() registers
--- the Multiverse commands, the <leader>p keymaps target them, and the
--- project switcher, project.nvim, persistence.nvim and scope.nvim are gone.
+-- the Multiverse commands, the <leader>p keymaps target them, the terminal
+-- keymaps (<leader>t, <C-Return>) toggle MultiverseTerminal, zellij (which
+-- MultiverseTerminal shells out to) is on PATH, and the project switcher,
+-- project.nvim, persistence.nvim, scope.nvim and toggleterm are gone.
 
 local failures = {}
 
@@ -15,16 +17,21 @@ local function check_commands()
     "MultiverseRemove",
     "MultiverseAlternate",
     "MultiverseLog",
+    "MultiverseTerminal",
   }) do
     -- exists() returns 2 for user-defined commands, 0 when missing.
     if vim.fn.exists(":" .. name) ~= 2 then
       fail(string.format("command :%s does not exist", name))
     end
   end
+
+  if vim.fn.executable("zellij") ~= 1 then
+    fail("zellij is not on Neovim's PATH")
+  end
 end
 
-local function mapping(lhs)
-  return vim.fn.maparg(lhs, "n", false, true)
+local function mapping(lhs, mode)
+  return vim.fn.maparg(lhs, mode or "n", false, true)
 end
 
 -- which-key may install its own placeholder mapping on a group prefix.
@@ -49,6 +56,20 @@ local function check_keymaps()
     end
   end
 
+  for _, lhs in ipairs({ "<leader>t", "<C-Return>" }) do
+    for mode, expected in pairs({
+      n = "<cmd>multiverseterminal<cr>",
+      t = "<c-\\><c-n><cmd>multiverseterminal<cr>",
+    }) do
+      local map = mapping(lhs, mode)
+      if vim.tbl_isempty(map) then
+        fail(string.format("keymap %s is not mapped in mode %s", lhs, mode))
+      elseif (map.rhs or ""):lower() ~= expected then
+        fail(string.format("keymap %s (mode %s) rhs is %q, expected %q (case-insensitive)", lhs, mode, map.rhs or "", expected))
+      end
+    end
+  end
+
   for _, lhs in ipairs({ "<leader>fp", "<leader>p" }) do
     local map = mapping(lhs)
     if not vim.tbl_isempty(map) and not is_which_key_trigger(map) then
@@ -64,12 +85,16 @@ local function check_removed()
     end
   end
 
-  for _, name in ipairs({ "project_nvim", "persistence", "scope" }) do
+  for _, name in ipairs({ "project_nvim", "persistence", "scope", "toggleterm" }) do
     for _, pattern in ipairs({ "lua/" .. name .. ".lua", "lua/" .. name .. "/init.lua" }) do
       if #vim.api.nvim_get_runtime_file(pattern, false) > 0 then
         fail(string.format("lua module %q is still on the runtimepath (%s)", name, pattern))
       end
     end
+  end
+
+  if _G.ToggleProjectTerm ~= nil then
+    fail("ToggleProjectTerm should have been removed")
   end
 
   local default = vim.api.nvim_get_option_info2("sessionoptions", {}).default
