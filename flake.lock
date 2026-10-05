@@ -39,6 +39,22 @@
         "type": "github"
       }
     },
+    "multiverse-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791059344,
+        "narHash": "sha256-GkOyj8CpqW9GpmSr/4sk14chlJvcCn8WnzlQ95dBLhk=",
+        "owner": "codymikol",
+        "repo": "multiverse.nvim",
+        "rev": "67d5ae55b1e72cb8724477ce30585e646cd1e5ed",
+        "type": "github"
+      },
+      "original": {
+        "owner": "codymikol",
+        "repo": "multiverse.nvim",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1789006805,
@@ -109,6 +125,7 @@
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
+        "multiverse-nvim": "multiverse-nvim",
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim"
       }
