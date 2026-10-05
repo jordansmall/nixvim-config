@@ -21,9 +21,11 @@
       { action = "<C-w>l"; key = "<C-l>"; mode = [ "n" ]; }
 
       # Universe terminal (Zellij-backed float). Terminal mode leaves
-      # terminal-insert first so the same key closes the float.
+      # terminal-insert first so the same key closes the float. No t-mode
+      # <leader>t: a Space-prefixed t-mode map holds back every typed space
+      # for timeoutlen and swallows fast " t". Close from terminal mode with
+      # <C-Return> (needs a CSI-u terminal) or <C-\><C-N> then <leader>t.
       { mode = "n"; key = "<leader>t";  action = "<CMD>MultiverseTerminal<CR>"; options.desc = "Toggle universe terminal"; }
-      { mode = "t"; key = "<leader>t";  action = "<C-\\><C-N><CMD>MultiverseTerminal<CR>"; options.desc = "Toggle universe terminal"; }
       { mode = "n"; key = "<C-Return>"; action = "<CMD>MultiverseTerminal<CR>"; options.desc = "Toggle universe terminal"; }
       { mode = "t"; key = "<C-Return>"; action = "<C-\\><C-N><CMD>MultiverseTerminal<CR>"; options.desc = "Toggle universe terminal"; }
 
