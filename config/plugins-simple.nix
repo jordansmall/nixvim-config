@@ -29,7 +29,6 @@
   # Snippets, LSP helpers, and small extras
   plugins."friendly-snippets" = { enable = true; };
   plugins.trouble = { enable = true; };
-  plugins.scope = { enable = true; };
 
   # Ionide (F#) helper: was a tiny file that exposed extraPlugins using pkgs
   # keep it here as an extraPlugins entry so the vimPlugins package is still
