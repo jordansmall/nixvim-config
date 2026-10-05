@@ -310,6 +310,35 @@ local function raw_args(segment, parsed)
   return table.concat(want, " ")
 end
 
+local LUA_KEYWORDS = {}
+for kw in ([[and break do else elseif end false for function goto if in local
+    nil not or repeat return then true until while]]):gmatch("%a+") do
+  LUA_KEYWORDS[kw] = true
+end
+
+-- Returns the global's name when `code` (the argument of `:lua`) starts with a
+-- call on a bare global, in any call syntax Lua allows: `Name(...)`,
+-- `Name"str"`, `Name{...}`, `Name[[str]]`, or the same via `_G.Name` /
+-- `_G["Name"]`. Dotted/method calls (`vim.x()`, `Name:x()`) and indexing
+-- (`Name[x]`) are not bare-global calls.
+local function lua_global_call(code)
+  local name, rest = code:match("^_G%s*%.%s*([%a_][%w_]*)(.*)$")
+  if not name then
+    name, rest = code:match("^_G%s*%[%s*[\"']([%a_][%w_]*)[\"']%s*%](.*)$")
+  end
+  if not name then
+    name, rest = code:match("^([%a_][%w_]*)(.*)$")
+  end
+  -- `return{...}`, `if(x)then` etc. look like calls but name no global.
+  if not name or LUA_KEYWORDS[name] then
+    return nil
+  end
+  if rest:find("^%s*[%(\"'{]") or rest:find("^%s*%[=*%[") then
+    return name
+  end
+  return nil
+end
+
 local function check_mapping(failures, mode, map)
   local cmdtext = rhs_command(map.rhs)
   if not cmdtext then
@@ -340,12 +369,12 @@ local function check_mapping(failures, mode, map)
       end
     end
     if parsed.cmd == "lua" then
-      local global_name = table.concat(parsed.args or {}, " "):match("^([%a_][%w_]*)%s*%(")
+      local global_name = lua_global_call(table.concat(parsed.args or {}, " "))
       -- `require` is Lua's module loader, not a config-defined global; plugins
       -- such as plenary bind `<cmd>lua require(...)<cr>` by default.
       if global_name and global_name ~= "require" then
         table.insert(failures, string.format(
-          "%s %s -> <cmd>lua %s()<cr> binds to a Lua global; ADR 0002 requires a user command",
+          "%s %s -> <cmd>lua %s...<cr> binds to a Lua global; ADR 0002 requires a user command",
           mode, map.lhs, global_name))
       end
       -- `:lua` consumes the rest of the line, so nothing follows it.
@@ -391,6 +420,38 @@ local function run_self_test()
     -- Flagged even though the global exists: ADR 0002 forbids the binding itself.
     { lhs = "<Plug>KcTestDefinedGlobal",
       rhs = "<cmd>lua KeymapCommandsSelfTestDefinedGlobal()<cr>", expect_flagged = true },
+    -- Any call syntax binds the global, not only `Name(...)`.
+    { lhs = "<Plug>KcTestStringCallGlobal",
+      rhs = '<cmd>lua KeymapCommandsSelfTestDefinedGlobal"x"<cr>', expect_flagged = true },
+    { lhs = "<Plug>KcTestSingleQuoteCallGlobal",
+      rhs = "<cmd>lua KeymapCommandsSelfTestDefinedGlobal'x'<cr>", expect_flagged = true },
+    { lhs = "<Plug>KcTestLongBracketCallGlobal",
+      rhs = "<cmd>lua KeymapCommandsSelfTestDefinedGlobal[[x]]<cr>", expect_flagged = true },
+    { lhs = "<Plug>KcTestTableCallGlobal",
+      rhs = "<cmd>lua KeymapCommandsSelfTestDefinedGlobal{}<cr>", expect_flagged = true },
+    { lhs = "<Plug>KcTestGPrefixGlobal",
+      rhs = "<cmd>lua _G.KeymapCommandsSelfTestDefinedGlobal()<cr>", expect_flagged = true },
+    { lhs = "<Plug>KcTestGPrefixStringCallGlobal",
+      rhs = '<cmd>lua _G.KeymapCommandsSelfTestDefinedGlobal"x"<cr>', expect_flagged = true },
+    { lhs = "<Plug>KcTestGIndexGlobal",
+      rhs = '<cmd>lua _G["KeymapCommandsSelfTestDefinedGlobal"]()<cr>', expect_flagged = true },
+    { lhs = "<Plug>KcTestGSingleQuoteIndexGlobal",
+      rhs = "<cmd>lua _G['KeymapCommandsSelfTestDefinedGlobal']()<cr>", expect_flagged = true },
+    { lhs = "<Plug>KcTestSpacedStringCallGlobal",
+      rhs = '<cmd>lua KeymapCommandsSelfTestDefinedGlobal "x"<cr>', expect_flagged = true },
+    { lhs = "<Plug>KcTestLeveledLongBracketCallGlobal",
+      rhs = "<cmd>lua KeymapCommandsSelfTestDefinedGlobal[=[x]=]<cr>", expect_flagged = true },
+    -- Dotted calls reach into a module table, not a bare global function.
+    { lhs = "<Plug>KcTestDottedCall",
+      rhs = "<cmd>lua vim.print()<cr>", expect_flagged = false },
+    { lhs = "<Plug>KcTestIndexCall",
+      rhs = "<cmd>lua KeymapCommandsSelfTestDefinedGlobal[1]()<cr>", expect_flagged = false },
+    { lhs = "<Plug>KcTestKeywordCall",
+      rhs = "<cmd>lua return{}<cr>", expect_flagged = false },
+    { lhs = "<Plug>KcTestRequireString",
+      rhs = "<cmd>lua require'vim.inspect'<cr>", expect_flagged = false },
+    { lhs = "<Plug>KcTestRequireGPrefix",
+      rhs = "<cmd>lua _G.require('vim.inspect')<cr>", expect_flagged = false },
     -- A modifier in front of `lua` must not hide the global from the check.
     { lhs = "<Plug>KcTestModifierGlobal",
       rhs = "<cmd>silent lua KeymapCommandsSelfTestDefinedGlobal()<cr>", expect_flagged = true },
