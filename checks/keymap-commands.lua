@@ -21,6 +21,9 @@ local function rhs_command(rhs)
       cmd = stripped
       stripped = cmd:gsub("^<[^<>]+>", "")
     end
+    -- nvim_get_keymap escapes a literal `<` as `<lt>`, which would turn a
+    -- `'<,'>` range into `'<lt>,'>` and parse as `:ltag`.
+    cmd = cmd:gsub("<[Ll][Tt]>", "<")
   end
   return cmd
 end
@@ -348,10 +351,13 @@ local function check_mapping(failures, mode, map)
       -- `:lua` consumes the rest of the line, so nothing follows it.
       break
     end
-    cmdtext = parsed.nextcmd
+    -- nvim_parse_cmd may still report a nextcmd for these (e.g. :echo splits
+    -- at a bar inside a string), so the splitter takes precedence.
     local split = OWN_BAR_COMMANDS[parsed.cmd]
-    if (cmdtext == nil or cmdtext == "") and split then
+    if split then
       cmdtext = split(raw_args(segment, parsed))
+    else
+      cmdtext = parsed.nextcmd
     end
   end
 end
@@ -376,190 +382,190 @@ end
 -- to validate the real keymaps below; temp maps are removed either way.
 local function run_self_test()
   local cases = {
-    { lhs = "<Plug>KeymapCommandsSelfTestBogusCmd",
+    { lhs = "<Plug>KcTestBogusCmd",
       rhs = "<cmd>KeymapCommandsSelfTestNoSuchCommand12345<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestGoodCmd",
+    { lhs = "<Plug>KcTestGoodCmd",
       rhs = "<cmd>echo<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestBogusGlobal",
+    { lhs = "<Plug>KcTestBogusGlobal",
       rhs = "<cmd>lua KeymapCommandsSelfTestUndefinedGlobal12345()<cr>", expect_flagged = true },
     -- Flagged even though the global exists: ADR 0002 forbids the binding itself.
-    { lhs = "<Plug>KeymapCommandsSelfTestDefinedGlobal",
+    { lhs = "<Plug>KcTestDefinedGlobal",
       rhs = "<cmd>lua KeymapCommandsSelfTestDefinedGlobal()<cr>", expect_flagged = true },
     -- A modifier in front of `lua` must not hide the global from the check.
-    { lhs = "<Plug>KeymapCommandsSelfTestModifierGlobal",
+    { lhs = "<Plug>KcTestModifierGlobal",
       rhs = "<cmd>silent lua KeymapCommandsSelfTestDefinedGlobal()<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestRequire",
+    { lhs = "<Plug>KcTestRequire",
       rhs = "<cmd>lua require('vim.inspect')<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestBareColon",
+    { lhs = "<Plug>KcTestBareColon",
       rhs = ":KeymapCommandsSelfTestNoSuchCommand54321<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestColonCU",
+    { lhs = "<Plug>KcTestColonCU",
       rhs = ":<C-U>KeymapCommandsSelfTestNoSuchCommand54321<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestColonGoodCmd",
+    { lhs = "<Plug>KcTestColonGoodCmd",
       rhs = ":echo<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestBang",
+    { lhs = "<Plug>KcTestBang",
       rhs = "<cmd>bdelete!<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestChainGood",
+    { lhs = "<Plug>KcTestChainGood",
       rhs = "<cmd>bdelete|bnext<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestChainBad",
+    { lhs = "<Plug>KcTestChainBad",
       rhs = "<cmd>bdelete|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestChainSpacedBad",
+    { lhs = "<Plug>KcTestChainSpacedBad",
       rhs = "<cmd>bdelete | KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestChainBarKeyBad",
+    { lhs = "<Plug>KcTestChainBarKeyBad",
       rhs = "<cmd>bdelete<Bar>KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
     -- bdelete takes arguments, so an escaped bar is a literal argument char.
-    { lhs = "<Plug>KeymapCommandsSelfTestEscapedBar",
+    { lhs = "<Plug>KcTestEscapedBar",
       rhs = "<cmd>bdelete\\|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestLuaBar",
+    { lhs = "<Plug>KcTestLuaBar",
       rhs = "<cmd>lua vim.print(1) | vim.print(2)<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestNormalBar",
+    { lhs = "<Plug>KcTestNormalBar",
       rhs = "<cmd>normal! a|b<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestColonChainBad",
+    { lhs = "<Plug>KcTestColonChainBad",
       rhs = ":bdelete|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestAbbrev",
+    { lhs = "<Plug>KcTestAbbrev",
       rhs = "<cmd>bd<cr>", expect_flagged = false },
     -- Expression commands carry no bar syntax nvim_parse_cmd can see.
-    { lhs = "<Plug>KeymapCommandsSelfTestCallChainBad",
+    { lhs = "<Plug>KcTestCallChainBad",
       rhs = "<cmd>call KeymapCommandsSelfTestNoFn()|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
     -- The string and `||` must not end the expression; the last bar does.
-    { lhs = "<Plug>KeymapCommandsSelfTestEchoBarsBad",
+    { lhs = "<Plug>KcTestEchoBarsBad",
       rhs = "<cmd>echo \"a|b\" || 0|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestEchoStringsGood",
+    { lhs = "<Plug>KcTestEchoStringsGood",
       rhs = "<cmd>echo \"a|b\"|echo 'c''|d'<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestRangeChainBad",
+    { lhs = "<Plug>KcTestRangeChainBad",
       rhs = "<cmd>bdelete|%KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestRangeChainGood",
+    { lhs = "<Plug>KcTestRangeChainGood",
       rhs = "<cmd>%bd|e#|bd#<cr>", expect_flagged = false },
     -- Marks are unset headless, so the range must not cause a false failure.
-    { lhs = "<Plug>KeymapCommandsSelfTestMarkRangeGood",
+    { lhs = "<Plug>KcTestMarkRangeGood",
       rhs = ":'<,'>sort<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestMarkRangeChainBad",
+    { lhs = "<Plug>KcTestMarkRangeChainBad",
       rhs = "<cmd>bdelete|'<,'>KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
     -- Search and visual-area ranges can't resolve headless either (E486, E20).
-    { lhs = "<Plug>KeymapCommandsSelfTestSearchRangeGood",
+    { lhs = "<Plug>KcTestSearchRangeGood",
       rhs = ":/TODO/d<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestBackSearchRangeOnlyGood",
+    { lhs = "<Plug>KcTestBackSearchRangeOnlyGood",
       rhs = ":?foo?<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestVisualAreaRangeGood",
+    { lhs = "<Plug>KcTestVisualAreaRangeGood",
       rhs = ":*sort<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestSearchRangeChainBad",
+    { lhs = "<Plug>KcTestSearchRangeChainBad",
       rhs = "<cmd>bdelete|/x/KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestModifierBad",
+    { lhs = "<Plug>KcTestModifierBad",
       rhs = "<cmd>silent KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
     -- Commands without a trailing-bar flag find their own `|` at runtime, so
     -- nvim_parse_cmd gives no nextcmd for them either.
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteChainBad",
+    { lhs = "<Plug>KcTestSubstituteChainBad",
       rhs = "<cmd>%s/\\s\\+$//e|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteChainGood",
+    { lhs = "<Plug>KcTestSubstituteChainGood",
       rhs = "<cmd>%s/x//e|nohlsearch<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteEscapedBarBad",
+    { lhs = "<Plug>KcTestSubstituteEscapedBarBad",
       rhs = "<cmd>%s/a\\|b/c/|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
     -- An unterminated replacement swallows the bar, so nothing follows to check.
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteUnterminatedGood",
+    { lhs = "<Plug>KcTestSubstituteUnterminatedGood",
       rhs = "<cmd>s/a/b|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = false },
     -- A `[...]` collection hides the delimiter from the pattern, not the replacement.
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteCollectionGood",
+    { lhs = "<Plug>KcTestSubstituteCollectionGood",
       rhs = "<cmd>s/[/]/x|KeymapCommandsSelfTestNoSuchCmdXyz/<cr>", expect_flagged = false },
     -- `\V` makes a bare `[` literal, so the pattern ends at the first `/`.
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteVeryNoMagicBracketBad",
+    { lhs = "<Plug>KcTestSubstituteVeryNoMagicBracketBad",
       rhs = "<cmd>s/\\V[/x/|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
     -- Under `\V` it is `\[` that opens a collection, hiding the `/`.
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteVeryNoMagicEscapedBracketGood",
+    { lhs = "<Plug>KcTestSubstituteVeryNoMagicEscapedBracketGood",
       rhs = "<cmd>s/\\V\\[/]/x|KeymapCommandsSelfTestNoSuchCmdXyz/<cr>", expect_flagged = false },
     -- A `"` after the flags starts a comment, hiding the bar.
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteCommentGood",
+    { lhs = "<Plug>KcTestSubstituteCommentGood",
       rhs = "<cmd>%s/a/b/g \" note|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = false },
     -- Each collection form hides the `/` delimiter, so the bar stays in the
     -- replacement; a mis-skipped collection closes early and splits on that bar.
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteCollectionClassGood",
+    { lhs = "<Plug>KcTestSubstituteCollectionClassGood",
       rhs = "<cmd>s/[[:alpha:]/]/x|KeymapCommandsSelfTestNoSuchCmdXyz/<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteCollectionEquivGood",
+    { lhs = "<Plug>KcTestSubstituteCollectionEquivGood",
       rhs = "<cmd>s/[[=a=]/]/x|KeymapCommandsSelfTestNoSuchCmdXyz/<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteCollectionCollGood",
+    { lhs = "<Plug>KcTestSubstituteCollectionCollGood",
       rhs = "<cmd>s/[[.a.]/]/x|KeymapCommandsSelfTestNoSuchCmdXyz/<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteCollectionCaretGood",
+    { lhs = "<Plug>KcTestSubstituteCollectionCaretGood",
       rhs = "<cmd>s/[^]/]/x|KeymapCommandsSelfTestNoSuchCmdXyz/<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteCollectionLeadBracketGood",
+    { lhs = "<Plug>KcTestSubstituteCollectionLeadBracketGood",
       rhs = "<cmd>s/[]/]/x|KeymapCommandsSelfTestNoSuchCmdXyz/<cr>", expect_flagged = false },
     -- A leading `-` must not swallow the next char (here the `\` of `\]`).
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteCollectionLeadDashGood",
+    { lhs = "<Plug>KcTestSubstituteCollectionLeadDashGood",
       rhs = "<cmd>s/[-\\]/]/x|KeymapCommandsSelfTestNoSuchCmdXyz/<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteCollectionEscapeGood",
+    { lhs = "<Plug>KcTestSubstituteCollectionEscapeGood",
       rhs = "<cmd>s/[\\]/]/x|KeymapCommandsSelfTestNoSuchCmdXyz/<cr>", expect_flagged = false },
     -- A range end swallows `\`, so `[a-\]` closes at its `]` and the later bar
     -- splits; `a-]` must not swallow the closing `]`.
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteCollectionRangeEndBad",
+    { lhs = "<Plug>KcTestSubstituteCollectionRangeEndBad",
       rhs = "<cmd>s/[a-\\]/x/|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteCollectionRangeBeforeCloseBad",
+    { lhs = "<Plug>KcTestSubstituteCollectionRangeBeforeCloseBad",
       rhs = "<cmd>s/[a-]/]/x|KeymapCommandsSelfTestNoSuchCmdXyz/<cr>", expect_flagged = true },
     -- nvim_parse_cmd turns `\\` into `\` in args; the splitters must still see
     -- the raw text, or the escaped backslash hides the closing delimiter/quote.
-    { lhs = "<Plug>KeymapCommandsSelfTestSubstituteBackslashChainBad",
+    { lhs = "<Plug>KcTestSubstituteBackslashChainBad",
       rhs = "<cmd>%s/\\//\\\\/g|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestSortBackslashChainBad",
+    { lhs = "<Plug>KcTestSortBackslashChainBad",
       rhs = "<cmd>sort /\\\\/|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestEchoBackslashChainBad",
+    { lhs = "<Plug>KcTestEchoBackslashChainBad",
       rhs = "<cmd>echo \"C:\\\\\"|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestSortChainBad",
+    { lhs = "<Plug>KcTestSortChainBad",
       rhs = ":sort|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestSortPatternChainBad",
+    { lhs = "<Plug>KcTestSortPatternChainBad",
       rhs = "<cmd>sort /a|b/|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestRepeatSubstituteChainBad",
+    { lhs = "<Plug>KcTestRepeatSubstituteChainBad",
       rhs = "<cmd>&&|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestMatchChainBad",
+    { lhs = "<Plug>KcTestMatchChainBad",
       rhs = "<cmd>match Search /a|b/|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
     -- `none` and a bare bar end `:match` itself; the bar then separates commands.
-    { lhs = "<Plug>KeymapCommandsSelfTestMatchNoneBad",
+    { lhs = "<Plug>KcTestMatchNoneBad",
       rhs = "<cmd>match none|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestMatchNoneQuoteBad",
+    { lhs = "<Plug>KcTestMatchNoneQuoteBad",
       rhs = "<cmd>match none\"|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestMatchBareBarBad",
+    { lhs = "<Plug>KcTestMatchBareBarBad",
       rhs = "<cmd>match|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
     -- Unlike `:sort`, `:match` has no TRLBAR, so a leading `"` is no comment.
-    { lhs = "<Plug>KeymapCommandsSelfTestMatchCommentChainBad",
+    { lhs = "<Plug>KcTestMatchCommentChainBad",
       rhs = "<cmd>match \" c|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestSortCommentGood",
+    { lhs = "<Plug>KcTestSortCommentGood",
       rhs = "<cmd>sort \" c|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestEchoUnterminatedGood",
+    { lhs = "<Plug>KcTestEchoUnterminatedGood",
       rhs = "<cmd>echo 'a|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestTildeChainBad",
+    { lhs = "<Plug>KcTestTildeChainBad",
       rhs = "<cmd>~|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestWincmdChainBad",
+    { lhs = "<Plug>KcTestWincmdChainBad",
       rhs = "<cmd>wincmd h|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
     -- The argument char may be `|`; only a bar after it separates commands.
-    { lhs = "<Plug>KeymapCommandsSelfTestWincmdBarArgGood",
+    { lhs = "<Plug>KcTestWincmdBarArgGood",
       rhs = "<cmd>wincmd ||wincmd _<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestWincmdBarArgBad",
+    { lhs = "<Plug>KcTestWincmdBarArgBad",
       rhs = "<cmd>wincmd ||KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestWincmdBarArgAloneGood",
+    { lhs = "<Plug>KcTestWincmdBarArgAloneGood",
       rhs = "<cmd>wincmd |KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = false },
     -- `g` takes a second argument char, so `g|` consumes the bar.
-    { lhs = "<Plug>KeymapCommandsSelfTestWincmdGBad",
+    { lhs = "<Plug>KcTestWincmdGBad",
       rhs = "<cmd>wincmd g}|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestWincmdGBarArgGood",
+    { lhs = "<Plug>KcTestWincmdGBarArgGood",
       rhs = "<cmd>wincmd g|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = false },
-    { lhs = "<Plug>KeymapCommandsSelfTestCexprChainBad",
+    { lhs = "<Plug>KcTestCexprChainBad",
       rhs = "<cmd>cexpr []|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
     -- `:help` has no TRLBAR; it ends at a bar followed by text.
-    { lhs = "<Plug>KeymapCommandsSelfTestHelpChainBad",
+    { lhs = "<Plug>KcTestHelpChainBad",
       rhs = "<cmd>help foo|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestHelpChainGood",
+    { lhs = "<Plug>KcTestHelpChainGood",
       rhs = "<cmd>help foo|bnext<cr>", expect_flagged = false },
     -- `||` is no split point; both directions are covered so that a plain
     -- first-bar split flips one of them whatever the empty segment parses to.
-    { lhs = "<Plug>KeymapCommandsSelfTestHelpDoubleBarChainBad",
+    { lhs = "<Plug>KcTestHelpDoubleBarChainBad",
       rhs = "<cmd>help a||KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestHelpDoubleBarChainGood",
+    { lhs = "<Plug>KcTestHelpDoubleBarChainGood",
       rhs = "<cmd>help a||echo 'x|KeymapCommandsSelfTestNoSuchCmdXyz<cr>", expect_flagged = false },
     -- A bare `:catch` and a leading `"` (no delimiter) end at the first bar.
-    { lhs = "<Plug>KeymapCommandsSelfTestCatchBareChainBad",
+    { lhs = "<Plug>KcTestCatchBareChainBad",
       rhs = "<cmd>try|catch|KeymapCommandsSelfTestNoSuchCmdXyz|endtry<cr>", expect_flagged = true },
-    { lhs = "<Plug>KeymapCommandsSelfTestCatchQuoteChainBad",
+    { lhs = "<Plug>KcTestCatchQuoteChainBad",
       rhs = "<cmd>try|catch \" c|KeymapCommandsSelfTestNoSuchCmdXyz|endtry<cr>", expect_flagged = true },
     -- An unterminated pattern swallows the bar.
-    { lhs = "<Plug>KeymapCommandsSelfTestCatchUnterminatedGood",
+    { lhs = "<Plug>KcTestCatchUnterminatedGood",
       rhs = "<cmd>try|catch /abc|KeymapCommandsSelfTestNoSuchCmdXyz|endtry<cr>", expect_flagged = false },
     -- The bar inside the `:catch` pattern must not split the command.
-    { lhs = "<Plug>KeymapCommandsSelfTestCatchChainBad",
+    { lhs = "<Plug>KcTestCatchChainBad",
       rhs = "<cmd>try|catch /a|b/|KeymapCommandsSelfTestNoSuchCmdXyz|endtry<cr>", expect_flagged = true },
   }
 
