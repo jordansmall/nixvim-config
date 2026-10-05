@@ -21,7 +21,6 @@
     ./lsp
     ./utils/blankline.nix
     ./utils/navic.nix
-    ./utils/toggleterm.nix
     ./options.nix
   ];
 
