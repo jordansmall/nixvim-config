@@ -1,0 +1,33 @@
+name: Agent research close
+
+# `agent-research-reject` is a terminal research verdict; close the issue as
+# not planned so the label and issue state cannot drift. Spindrift's Filer
+# only suppresses refiling a finding when the matching rejected issue is
+# closed.
+on:
+  issues:
+    types: [labeled]
+
+# Distinct from `agent-research-<n>` so a close never queues behind a research
+# dispatch on the same issue.
+concurrency:
+  group: agent-research-close-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+# GITHUB_TOKEN events never trigger further workflow runs, so this cannot loop.
+permissions:
+  issues: write
+
+jobs:
+  close:
+    if: github.event.label.name == 'agent-research-reject' && github.event.issue.state == 'open'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Close the rejected issue as not planned
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue close "${{ github.event.issue.number }}" \
+            --repo "${{ github.repository }}" \
+            --reason "not planned"
