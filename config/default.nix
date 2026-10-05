@@ -11,6 +11,7 @@
     ./extras/gitsigns.nix
     ./extras/neo-tree.nix
     ./extras/direnv-lsp.nix
+    ./extras/direnv-export.nix
     ./extras/multiverse.nix
     ./extras/telescope.nix
     ./extras/treesitter.nix
