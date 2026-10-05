@@ -62,6 +62,22 @@
             # Run `nix flake check .` to verify that your config is not broken
             default =
               nixvimLib.check.mkTestDerivationFromNixvimModule nixvimModule;
+
+            # Headless keymap audit: fails if any keymap's rhs runs an Ex
+            # command or `<cmd>lua Global()<cr>` global that doesn't exist.
+            keymap-commands = pkgs.runCommand "keymap-commands-check" {
+              nativeBuildInputs = [ nvim ];
+            } ''
+              set +e
+              output=$(HOME=$(realpath .) nvim -mn --headless -c "luafile ${./checks/keymap-commands.lua}" 2>&1 >/dev/null)
+              status=$?
+              set -e
+              if [ "$status" -ne 0 ] || [ -n "$output" ]; then
+                echo "$output"
+                exit 1
+              fi
+              touch $out
+            '';
           };
 
           packages = {
