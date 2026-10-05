@@ -8,7 +8,6 @@
   # setting vim.env, also restarts clients once.
   # Restarts are limited to clients under the same .envrc as the cwd direnv
   # exported for (tabs with different :tcd re-export on every tab switch).
-  # Independent of the project switcher's own restart in workspaces.nix.
   autoCmd = [
     {
       event = "User";
