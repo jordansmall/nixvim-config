@@ -20,9 +20,12 @@
       { action = "<C-w>k"; key = "<C-k>"; mode = [ "n" ]; }
       { action = "<C-w>l"; key = "<C-l>"; mode = [ "n" ]; }
 
-      # Terminal (per-project)
-      { mode = [ "n" "t" ]; key = "<leader>t";  action = "<CMD>lua ToggleProjectTerm()<CR>"; options.desc = "Toggle project terminal"; }
-      { mode = [ "n" "t" ]; key = "<C-Return>"; action = "<CMD>lua ToggleProjectTerm()<CR>"; options.desc = "Toggle project terminal"; }
+      # Universe terminal (Zellij-backed float). Terminal mode leaves
+      # terminal-insert first so the same key closes the float.
+      { mode = "n"; key = "<leader>t";  action = "<CMD>MultiverseTerminal<CR>"; options.desc = "Toggle universe terminal"; }
+      { mode = "t"; key = "<leader>t";  action = "<C-\\><C-N><CMD>MultiverseTerminal<CR>"; options.desc = "Toggle universe terminal"; }
+      { mode = "n"; key = "<C-Return>"; action = "<CMD>MultiverseTerminal<CR>"; options.desc = "Toggle universe terminal"; }
+      { mode = "t"; key = "<C-Return>"; action = "<C-\\><C-N><CMD>MultiverseTerminal<CR>"; options.desc = "Toggle universe terminal"; }
 
       # File tree
       { key = "<leader>e"; action = "<CMD>Neotree toggle<CR>"; options.desc = "Toggle Nvim Tree"; }
