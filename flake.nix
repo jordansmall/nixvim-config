@@ -5,6 +5,10 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixvim.url = "github:nix-community/nixvim";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    multiverse-nvim = {
+      url = "github:codymikol/multiverse.nvim";
+      flake = false;
+    };
   };
 
   outputs = { nixvim, flake-parts, ... }@inputs:
@@ -41,7 +45,6 @@
             config.allowUnfreePredicate = pkg:
               builtins.elem (inputs.nixpkgs.lib.getName pkg) [
                 "cmp-emoji"
-                "scope.nvim"
                 # Pulled in by copilot.lua; GitHub Copilot License.
                 "copilot-language-server"
               ];
@@ -53,7 +56,7 @@
             module = import ./config; # import the module directly
             # You can use `extraSpecialArgs` to pass additional arguments to your module files
             extraSpecialArgs = {
-              # inherit (inputs) foo;
+              inherit (inputs) multiverse-nvim;
             };
           };
           nvim = nixvim'.makeNixvimWithModule nixvimModule;
@@ -73,7 +76,17 @@
           checks = {
             # Run `nix flake check .` to verify that your config is not broken
             default =
-              nixvimLib.check.mkTestDerivationFromNixvimModule nixvimModule;
+              nixvimLib.check.mkTestDerivationFromNixvimModule (nixvimModule // {
+                module = {
+                  imports = [ nixvimModule.module ];
+                  # The check quits with `+q` from an unregistered cwd, where
+                  # multiverse's VimLeavePre save notifies "No universe found"
+                  # and any stderr output fails the check.
+                  extraConfigLuaPost = ''
+                    vim.api.nvim_del_augroup_by_name("multiverse_on_exit")
+                  '';
+                };
+              });
 
             # Headless keymap audit: fails if any keymap's rhs runs an Ex
             # command or `<cmd>lua Global()<cr>` global that doesn't exist.
@@ -83,6 +96,10 @@
             # Headless spec: `User DirenvLoaded` restarts LSP clients only when
             # the environment changed, and they reattach to listed buffers.
             direnv-lsp = mkHeadlessCheck "direnv-lsp" ./checks/direnv-lsp.lua;
+
+            # Headless spec: multiverse.nvim's commands and <leader>p keymaps
+            # exist, and the project switcher it replaced is gone.
+            multiverse = mkHeadlessCheck "multiverse" ./checks/multiverse.lua;
           };
 
           packages = {
