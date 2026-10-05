@@ -25,17 +25,51 @@
     undofile = true;
   };
 
-  # Trigger autoread whenever focus returns to Neovim or we enter a buffer.
-  # Without these events, autoread is passive and never fires on its own.
+  # CursorHold fires after every typing pause at updatetime=100ms, so it only
+  # checks buffers visible in this tabpage. Per-buffer checktime reloads
+  # synchronously, so without nested = true FileChangedShellPost is skipped.
   config.autoCmd = [
     {
-      event = [ "FocusGained" "BufEnter" "CursorHold" "CursorHoldI" ];
-      desc = "Reload buffer if file changed on disk (supports git operations)";
+      event = "FocusGained";
+      desc = "Reload all buffers if files changed on disk (supports git operations)";
       pattern = "*";
       callback.__raw = ''
         function()
           if vim.fn.mode() ~= "c" then
             vim.cmd("checktime")
+          end
+        end
+      '';
+    }
+    {
+      event = "BufEnter";
+      nested = true;
+      desc = "Reload entered buffer if its file changed on disk";
+      pattern = "*";
+      callback.__raw = ''
+        function(args)
+          if vim.fn.mode() ~= "c" then
+            vim.cmd("checktime " .. args.buf)
+          end
+        end
+      '';
+    }
+    {
+      event = [ "CursorHold" "CursorHoldI" ];
+      nested = true;
+      desc = "Reload visible buffers if their files changed on disk";
+      pattern = "*";
+      callback.__raw = ''
+        function()
+          if vim.fn.mode() == "c" then
+            return
+          end
+          local seen = {}
+          for _, buf in ipairs(vim.fn.tabpagebuflist()) do
+            if not seen[buf] then
+              seen[buf] = true
+              vim.cmd("checktime " .. buf)
+            end
           end
         end
       '';
