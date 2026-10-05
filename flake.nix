@@ -57,19 +57,10 @@
             };
           };
           nvim = nixvim'.makeNixvimWithModule nixvimModule;
-        in {
-          checks = {
-            # Run `nix flake check .` to verify that your config is not broken
-            default =
-              nixvimLib.check.mkTestDerivationFromNixvimModule nixvimModule;
-
-            # Headless keymap audit: fails if any keymap's rhs runs an Ex
-            # command or `<cmd>lua Global()<cr>` global that doesn't exist.
-            keymap-commands = pkgs.runCommand "keymap-commands-check" {
-              nativeBuildInputs = [ nvim ];
-            } ''
+          mkHeadlessCheck = name: spec:
+            pkgs.runCommand "${name}-check" { nativeBuildInputs = [ nvim ]; } ''
               set +e
-              output=$(HOME=$(realpath .) nvim -mn --headless -c "luafile ${./checks/keymap-commands.lua}" 2>&1 >/dev/null)
+              output=$(HOME=$(realpath .) nvim -mn --headless -c "luafile ${spec}" 2>&1 >/dev/null)
               status=$?
               set -e
               if [ "$status" -ne 0 ] || [ -n "$output" ]; then
@@ -78,6 +69,20 @@
               fi
               touch $out
             '';
+        in {
+          checks = {
+            # Run `nix flake check .` to verify that your config is not broken
+            default =
+              nixvimLib.check.mkTestDerivationFromNixvimModule nixvimModule;
+
+            # Headless keymap audit: fails if any keymap's rhs runs an Ex
+            # command or `<cmd>lua Global()<cr>` global that doesn't exist.
+            keymap-commands =
+              mkHeadlessCheck "keymap-commands" ./checks/keymap-commands.lua;
+
+            # Headless spec: `User DirenvLoaded` restarts LSP clients only when
+            # the environment changed, and they reattach to listed buffers.
+            direnv-lsp = mkHeadlessCheck "direnv-lsp" ./checks/direnv-lsp.lua;
           };
 
           packages = {
