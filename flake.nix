@@ -89,7 +89,8 @@
               });
 
             # Headless keymap audit: fails if any keymap's rhs runs an Ex
-            # command or `<cmd>lua Global()<cr>` global that doesn't exist.
+            # command that doesn't exist, or binds to a `<cmd>lua Global()<cr>`
+            # global at all (ADR 0002: bind to user commands instead).
             keymap-commands =
               mkHeadlessCheck "keymap-commands" ./checks/keymap-commands.lua;
 
