@@ -98,6 +98,10 @@
             # the environment changed, and they reattach to listed buffers.
             direnv-lsp = mkHeadlessCheck "direnv-lsp" ./checks/direnv-lsp.lua;
 
+            # Headless spec: a `direnv export vim` job superseded by a newer one
+            # is dropped, so it neither applies its output nor fires DirenvLoaded.
+            direnv-export = mkHeadlessCheck "direnv-export" ./checks/direnv-export.lua;
+
             # Headless spec: multiverse.nvim's commands and <leader>p keymaps
             # exist, and the project switcher it replaced is gone.
             multiverse = mkHeadlessCheck "multiverse" ./checks/multiverse.lua;
