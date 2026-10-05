@@ -1,6 +1,8 @@
 -- Headless Neovim spec for the `keymap-commands` flake check: every mapping
 -- whose right-hand side runs an Ex command must name a command that exists.
--- Catches keymaps left pointing at a command/global a refactor removed.
+-- Catches keymaps left pointing at a command a refactor removed, and flags
+-- any `<cmd>lua Name()<cr>` rhs outright (ADR 0002: keymaps bind to user
+-- commands, never to Lua globals), whether or not the global exists.
 
 local function rhs_command(rhs)
   if not rhs or rhs == "" then
@@ -33,12 +35,12 @@ local function check_mapping(failures, mode, map)
     return
   end
   local global_name = lua_global_call(cmdtext)
-  if global_name then
-    if _G[global_name] == nil then
-      table.insert(failures, string.format(
-        "%s %s -> <cmd>lua %s()<cr> calls undefined global %q",
-        mode, map.lhs, global_name, global_name))
-    end
+  -- `require` is Lua's module loader, not a config-defined global; plugins
+  -- such as plenary bind `<cmd>lua require(...)<cr>` by default.
+  if global_name and global_name ~= "require" then
+    table.insert(failures, string.format(
+      "%s %s -> <cmd>lua %s()<cr> binds to a Lua global; ADR 0002 requires a user command",
+      mode, map.lhs, global_name))
   else
     local command_name = cmdtext:match("^(%S+)")
     -- Punctuation-only Ex commands (&, &&, <, >, @, #, =, !, ~, ...)
@@ -77,6 +79,11 @@ local function run_self_test()
       rhs = "<cmd>echo<cr>", expect_flagged = false },
     { lhs = "<Plug>KeymapCommandsSelfTestBogusGlobal",
       rhs = "<cmd>lua KeymapCommandsSelfTestUndefinedGlobal12345()<cr>", expect_flagged = true },
+    -- Flagged even though the global exists: ADR 0002 forbids the binding itself.
+    { lhs = "<Plug>KeymapCommandsSelfTestDefinedGlobal",
+      rhs = "<cmd>lua KeymapCommandsSelfTestDefinedGlobal()<cr>", expect_flagged = true },
+    { lhs = "<Plug>KeymapCommandsSelfTestRequire",
+      rhs = "<cmd>lua require('vim.inspect')<cr>", expect_flagged = false },
     { lhs = "<Plug>KeymapCommandsSelfTestBareColon",
       rhs = ":KeymapCommandsSelfTestNoSuchCommand54321<cr>", expect_flagged = true },
     { lhs = "<Plug>KeymapCommandsSelfTestColonCU",
@@ -89,8 +96,10 @@ local function run_self_test()
     vim.api.nvim_set_keymap("n", case.lhs, case.rhs, {})
   end
 
+  _G.KeymapCommandsSelfTestDefinedGlobal = function() end
   local self_ok, self_failures = pcall(check_keymaps)
 
+  _G.KeymapCommandsSelfTestDefinedGlobal = nil
   for _, case in ipairs(cases) do
     pcall(vim.api.nvim_del_keymap, "n", case.lhs)
   end
@@ -129,7 +138,7 @@ if #failures > 0 then
   for _, failure in ipairs(failures) do
     io.stderr:write(failure .. "\n")
   end
-  io.stderr:write(string.format("%d keymap(s) reference missing commands\n", #failures))
+  io.stderr:write(string.format("%d keymap(s) failed the keymap-commands audit\n", #failures))
   os.exit(1)
 end
 
