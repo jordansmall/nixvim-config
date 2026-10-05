@@ -16,6 +16,8 @@ let
   };
 in {
   extraPlugins = [ multiverse ];
+  # MultiverseTerminal shells out to zellij and warns when it is missing.
+  extraPackages = [ pkgs.zellij ];
   extraConfigLua = ''
     -- multiverse's initialize uses a non-recursive mkdir under stdpath("data")
     -- and notifies at ERROR level on failure, which breaks fresh HOMEs.
